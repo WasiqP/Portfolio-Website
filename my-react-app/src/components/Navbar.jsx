@@ -1,9 +1,10 @@
 import { useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Menu, X, Sun, Moon } from 'lucide-react';
+import { Sun, Moon, Menu, X } from 'lucide-react';
 import { useTheme } from '../contexts/ThemeContext';
 import ThemedButton from './ThemedButton';
+import StaggeredMenu from './StaggeredNav';
 
 const Navbar = () => {
   const [isOpen, setIsOpen] = useState(false);
@@ -129,25 +130,9 @@ const Navbar = () => {
             ))}
           </div>
 
-          {/* Theme Toggle and Mobile Menu */}
-          <div className="flex items-center space-x-3">
-            <motion.button
-              onClick={toggleTheme}
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
-              className="p-2 rounded-full transition-all duration-200 hover:bg-white/10"
-              style={{
-                background: theme === 'dark' ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.05)',
-                border: theme === 'dark' ? '1px solid rgba(255, 255, 255, 0.1)' : '1px solid rgba(0, 0, 0, 0.1)'
-              }}
-            >
-              {theme === 'dark' ? (
-                <Sun className="w-4 h-4 text-yellow-400" />
-              ) : (
-                <Moon className="w-4 h-4 text-slate-600" />
-              )}
-            </motion.button>
-
+          {/* Mobile Menu Button and Theme Toggle */}
+          <div className="flex items-center space-x-2">
+            {/* Mobile Menu Button */}
             <motion.button
               onClick={() => setIsOpen(!isOpen)}
               whileHover={{ scale: 1.05 }}
@@ -164,10 +149,33 @@ const Navbar = () => {
                 <Menu className="w-4 h-4 text-gray-400" />
               )}
             </motion.button>
+
+            {/* Theme Toggle */}
+            <motion.button
+              onClick={toggleTheme}
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+              className="p-2 rounded-full transition-all duration-200 hover:bg-white/10"
+              style={{
+                background: theme === 'dark' 
+                  ? 'linear-gradient(135deg, rgba(99, 102, 241, 0.3), rgba(139, 92, 246, 0.3))' 
+                  : 'linear-gradient(135deg, rgba(99, 102, 241, 0.2), rgba(139, 92, 246, 0.2))',
+                border: theme === 'dark' ? '1px solid rgba(99, 102, 241, 0.4)' : '1px solid rgba(99, 102, 241, 0.3)',
+                boxShadow: theme === 'dark' 
+                  ? '0 4px 12px rgba(99, 102, 241, 0.2)' 
+                  : '0 2px 8px rgba(99, 102, 241, 0.15)'
+              }}
+            >
+              {theme === 'dark' ? (
+                <Sun className="w-4 h-4 text-yellow-300" />
+              ) : (
+                <Moon className="w-4 h-4 text-indigo-600" />
+              )}
+            </motion.button>
           </div>
         </div>
 
-        {/* Mobile Navigation with StaggeredNav styling */}
+        {/* Mobile Menu Inside Navbar */}
         <AnimatePresence>
           {isOpen && (
             <motion.div
@@ -175,10 +183,10 @@ const Navbar = () => {
               animate={{ opacity: 1, height: 'auto' }}
               exit={{ opacity: 0, height: 0 }}
               transition={{ duration: 0.3 }}
-              className="md:hidden mt-6 rounded-xl overflow-hidden w-full"
+              className="md:hidden mt-4 rounded-xl overflow-hidden"
               style={{ 
-                background: theme === 'dark' ? 'var(--surface)' : 'rgba(255, 255, 255, 0.9)',
-                border: `1px solid ${theme === 'dark' ? 'var(--border)' : 'rgba(0, 0, 0, 0.1)'}`,
+                background: theme === 'dark' ? 'rgba(255, 255, 255, 0.05)' : 'rgba(255, 255, 255, 0.9)',
+                border: `1px solid ${theme === 'dark' ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)'}`,
                 backdropFilter: 'blur(12px)',
                 WebkitBackdropFilter: 'blur(12px)'
               }}
@@ -217,8 +225,8 @@ const Navbar = () => {
                 ))}
                 
                 {/* Social Links */}
-                <div className="px-6 py-4 border-t border-gray-700" style={{ borderColor: 'var(--border)' }}>
-                  <h3 className="text-lg font-semibold mb-3" style={{ color: 'var(--text)' }}>Socials</h3>
+                <div className="px-6 py-4 border-t" style={{ borderColor: theme === 'dark' ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)' }}>
+                  <h3 className="text-lg font-semibold mb-3" style={{ color: theme === 'dark' ? 'white' : 'black' }}>Socials</h3>
                   <div className="flex flex-wrap gap-3">
                     {socialItems.map((social, index) => (
                       <motion.a
@@ -231,17 +239,17 @@ const Navbar = () => {
                         transition={{ delay: 0.5 + index * 0.1 }}
                         className="px-4 py-2 rounded-lg transition-all duration-300 text-sm font-medium"
                         style={{ 
-                          color: 'var(--text-secondary)',
-                          background: 'var(--tertiary)',
-                          border: '1px solid var(--border)'
+                          color: theme === 'dark' ? 'rgba(255, 255, 255, 0.7)' : 'rgba(0, 0, 0, 0.7)',
+                          background: theme === 'dark' ? 'rgba(255, 255, 255, 0.05)' : 'rgba(0, 0, 0, 0.05)',
+                          border: `1px solid ${theme === 'dark' ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)'}`
                         }}
                         onMouseEnter={(e) => {
                           e.target.style.color = currentTheme.accent;
                           e.target.style.borderColor = currentTheme.accent;
                         }}
                         onMouseLeave={(e) => {
-                          e.target.style.color = 'var(--text-secondary)';
-                          e.target.style.borderColor = 'var(--border)';
+                          e.target.style.color = theme === 'dark' ? 'rgba(255, 255, 255, 0.7)' : 'rgba(0, 0, 0, 0.7)';
+                          e.target.style.borderColor = theme === 'dark' ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)';
                         }}
                       >
                         {social.label}
@@ -253,6 +261,7 @@ const Navbar = () => {
             </motion.div>
           )}
         </AnimatePresence>
+
     </motion.nav>
   );
 };

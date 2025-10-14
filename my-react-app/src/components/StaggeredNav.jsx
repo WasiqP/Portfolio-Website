@@ -336,9 +336,9 @@ const StaggeredMenu = ({
         })()}
       </div>
       <header className="staggered-menu-header" aria-label="Main navigation header">
-        <div className="sm-logo" aria-label="Logo">
+        {/* <div className="sm-logo" aria-label="Logo">
           <span className="text-2xl font-bold text-gradient">Wasiq Patel</span>
-        </div>
+        </div> */}
         <div className="flex items-center space-x-2">
           <ThemedButton
             onClick={toggleTheme}
