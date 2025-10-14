@@ -1,6 +1,7 @@
 import { motion } from 'framer-motion';
 import { Code, Smartphone, Zap, Users, Award, Coffee } from 'lucide-react';
 import { useTheme } from '../contexts/ThemeContext';
+import StatsBento from '../components/StatsBento';
 
 const AboutPage = () => {
   const { currentTheme } = useTheme();
@@ -30,6 +31,40 @@ const AboutPage = () => {
     { number: "3+", label: "Years Experience", icon: Award },
     { number: "100%", label: "Client Satisfaction", icon: Users },
     { number: "∞", label: "Cups of Coffee", icon: Coffee }
+  ];
+
+  // Custom stats data for Magic Bento
+  const bentoStatsData = [
+    {
+      title: '50+',
+      description: 'Apps Developed',
+      label: 'Projects'
+    },
+    {
+      title: '3+',
+      description: 'Years Experience',
+      label: 'Experience'
+    },
+    {
+      title: '100%',
+      description: 'Client Satisfaction',
+      label: 'Quality'
+    },
+    {
+      title: '∞',
+      description: 'Cups of Coffee',
+      label: 'Fuel'
+    },
+    {
+      title: '15+',
+      description: 'Technologies Mastered',
+      label: 'Skills'
+    },
+    {
+      title: '24/7',
+      description: 'Learning & Growing',
+      label: 'Mindset'
+    }
   ];
 
   const skills = [
@@ -85,21 +120,30 @@ const AboutPage = () => {
           </p>
         </motion.div>
 
-        {/* Stats Section */}
-        <motion.div variants={itemVariants} className="grid grid-cols-2 md:grid-cols-4 gap-8 mb-16">
-          {stats.map((stat, index) => (
-            <motion.div
-              key={stat.label}
-              whileHover={{ scale: 1.05 }}
-              className="text-center p-6 rounded-xl bg-gray-800 hover:bg-gray-700 transition-all duration-300"
-            >
-              <stat.icon className="w-8 h-8 mx-auto mb-4" style={{ color: currentTheme.accent }} />
-              <div className="text-3xl font-bold mb-2" style={{ color: currentTheme.accent }}>
-                {stat.number}
-              </div>
-              <div className="text-gray-400">{stat.label}</div>
-            </motion.div>
-          ))}
+        {/* Magic Bento Stats Section */}
+        <motion.div variants={itemVariants} className="mb-16">
+          <div className="text-center mb-8">
+            <h2 className="text-3xl font-bold mb-4">My Journey in Numbers</h2>
+            <p className="text-gray-400 max-w-2xl mx-auto">
+              A visual representation of my experience and achievements
+            </p>
+          </div>
+          <div className="flex justify-center">
+            <StatsBento
+              data={bentoStatsData}
+              textAutoHide={true}
+              enableStars={true}
+              enableSpotlight={true}
+              enableBorderGlow={true}
+              disableAnimations={false}
+              spotlightRadius={500}
+              particleCount={8}
+              enableTilt={false}
+              glowColor="99, 102, 241"
+              clickEffect={true}
+              enableMagnetism={true}
+            />
+          </div>
         </motion.div>
 
         {/* Main Content */}

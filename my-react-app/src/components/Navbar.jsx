@@ -13,8 +13,8 @@ const Navbar = () => {
 
   const navItems = [
     { name: 'Home', path: '/' },
-    { name: 'About', path: '/about' },
     { name: 'Projects', path: '/projects' },
+    { name: 'About', path: '/about' },
     { name: 'Skills', path: '/skills' },
     { name: 'Contact', path: '/contact' },
   ];
@@ -50,8 +50,9 @@ const Navbar = () => {
       style={{ width: 'calc(100% - 2rem)', maxWidth: '1180px', marginLeft: '40px', marginRight: '40px' }}
     >
       <div 
-        className="w-full flex items-center justify-between h-16 px-10 rounded-full backdrop-blur-xl border shadow-xl"
+        className="w-full flex items-center justify-between h-16 px-10 backdrop-blur-xl border shadow-xl"
         style={{
+          borderRadius: '50px',
           background: theme === 'dark' 
             ? 'linear-gradient(135deg, rgba(255, 255, 255, 0.08) 0%, rgba(255, 255, 255, 0.02) 100%)' 
             : 'linear-gradient(135deg, rgba(255, 255, 255, 0.9) 0%, rgba(255, 255, 255, 0.7) 100%)',
@@ -95,7 +96,7 @@ const Navbar = () => {
               >
                 <Link
                   to={item.path}
-                  className={`relative px-4 py-2 rounded-full transition-all duration-300 text-sm font-medium whitespace-nowrap ${
+                  className={`relative px-6 py-3 transition-all duration-300 text-sm font-medium whitespace-nowrap ${
                     location.pathname === item.path
                       ? 'text-white font-semibold'
                       : theme === 'dark' 
@@ -103,6 +104,7 @@ const Navbar = () => {
                         : 'text-gray-600 hover:text-gray-900 hover:bg-gray-100/50'
                   }`}
                   style={{
+                    borderRadius: '25px',
                     color: location.pathname === item.path ? 'white' : undefined,
                     textShadow: location.pathname === item.path ? '0 2px 4px rgba(0, 0, 0, 0.5)' : undefined,
                     fontWeight: location.pathname === item.path ? '600' : undefined,
@@ -114,8 +116,9 @@ const Navbar = () => {
                   {location.pathname === item.path && (
                     <motion.div
                       layoutId="activeTab"
-                      className="absolute inset-0 rounded-full"
+                      className="absolute inset-0"
                       style={{
+                        borderRadius: '25px',
                         background: `linear-gradient(135deg, ${currentTheme.accent}, #8b5cf6)`,
                         boxShadow: '0 4px 12px rgba(99, 102, 241, 0.4), 0 2px 6px rgba(0, 0, 0, 0.1)',
                         border: '1px solid rgba(255, 255, 255, 0.2)',
@@ -137,10 +140,16 @@ const Navbar = () => {
               onClick={() => setIsOpen(!isOpen)}
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
-              className="md:hidden p-2 rounded-full transition-all duration-200 hover:bg-white/10"
+              className="md:hidden p-3 transition-all duration-200 hover:bg-white/10"
               style={{
+                borderRadius: '50%',
                 background: theme === 'dark' ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.05)',
-                border: theme === 'dark' ? '1px solid rgba(255, 255, 255, 0.1)' : '1px solid rgba(0, 0, 0, 0.1)'
+                border: theme === 'dark' ? '1px solid rgba(255, 255, 255, 0.1)' : '1px solid rgba(0, 0, 0, 0.1)',
+                width: '44px',
+                height: '44px',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center'
               }}
             >
               {isOpen ? (
@@ -155,15 +164,21 @@ const Navbar = () => {
               onClick={toggleTheme}
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
-              className="p-2 rounded-full transition-all duration-200 hover:bg-white/10"
+              className="p-3 transition-all duration-200 hover:bg-white/10"
               style={{
+                borderRadius: '50%',
                 background: theme === 'dark' 
                   ? 'linear-gradient(135deg, rgba(99, 102, 241, 0.3), rgba(139, 92, 246, 0.3))' 
                   : 'linear-gradient(135deg, rgba(99, 102, 241, 0.2), rgba(139, 92, 246, 0.2))',
                 border: theme === 'dark' ? '1px solid rgba(99, 102, 241, 0.4)' : '1px solid rgba(99, 102, 241, 0.3)',
                 boxShadow: theme === 'dark' 
                   ? '0 4px 12px rgba(99, 102, 241, 0.2)' 
-                  : '0 2px 8px rgba(99, 102, 241, 0.15)'
+                  : '0 2px 8px rgba(99, 102, 241, 0.15)',
+                width: '44px',
+                height: '44px',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center'
               }}
             >
               {theme === 'dark' ? (
@@ -202,7 +217,7 @@ const Navbar = () => {
                     <Link
                       to={item.path}
                       onClick={() => setIsOpen(false)}
-                      className={`block px-6 py-4 rounded-lg transition-all duration-300 text-lg font-medium relative ${
+                      className={`block px-6 py-4 transition-all duration-300 text-lg font-medium relative ${
                         location.pathname === item.path
                           ? 'text-white font-semibold'
                           : theme === 'dark' 
@@ -210,6 +225,7 @@ const Navbar = () => {
                             : 'text-gray-700 hover:bg-gray-100 hover:text-gray-900'
                       }`}
                       style={{
+                        borderRadius: '20px',
                         color: location.pathname === item.path ? 'white' : undefined,
                         background: location.pathname === item.path 
                           ? `linear-gradient(135deg, ${currentTheme.accent}, #8b5cf6)` 
@@ -237,8 +253,9 @@ const Navbar = () => {
                         initial={{ opacity: 0, y: 20 }}
                         animate={{ opacity: 1, y: 0 }}
                         transition={{ delay: 0.5 + index * 0.1 }}
-                        className="px-4 py-2 rounded-lg transition-all duration-300 text-sm font-medium"
+                        className="px-4 py-2 transition-all duration-300 text-sm font-medium"
                         style={{ 
+                          borderRadius: '15px',
                           color: theme === 'dark' ? 'rgba(255, 255, 255, 0.7)' : 'rgba(0, 0, 0, 0.7)',
                           background: theme === 'dark' ? 'rgba(255, 255, 255, 0.05)' : 'rgba(0, 0, 0, 0.05)',
                           border: `1px solid ${theme === 'dark' ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)'}`
