@@ -1,0 +1,75 @@
+/* ============================================================
+   Design tokens — light-first, high contrast, one hot accent
+   Inspired by Stodio / Orange / Mercket language — not clones
+   ============================================================ */
+
+:root {
+  --bg: #ffffff;
+  --bg-soft: #f3f3f3;
+  --bg-inverse: #0a0a0a;
+  --border: #e8e8e8;
+  --border-strong: #0a0a0a;
+
+  --fg: #0a0a0a;
+  --fg-muted: #5c5c5c;
+  --fg-subtle: #9a9a9a;
+  --fg-inverse: #ffffff;
+
+  /* Hot accent — eye-catching, not cream/terracotta AI default */
+  --accent: #ff2e00;
+  --accent-fg: #ffffff;
+  --accent-soft: #fff0ec;
+
+  --font-sans: 'Poppins', ui-sans-serif, system-ui, sans-serif;
+  --font-mono: ui-monospace, 'SF Mono', 'Cascadia Code', Menlo, monospace;
+
+  --fw-light: 300;
+  --fw-regular: 400;
+  --fw-medium: 500;
+  --fw-semibold: 600;
+  --fw-bold: 700;
+  --fw-black: 900;
+
+  --max-w: 80rem;
+  --nav-h: 5rem;
+  --gutter: clamp(1.25rem, 4vw, 3rem);
+  --section-y: clamp(4.5rem, 11vw, 8.5rem);
+  --radius-shell: clamp(1.25rem, 3vw, 2rem);
+  --radius-pill: 999px;
+
+  --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+  --dur-fast: 150ms;
+  --dur-base: 280ms;
+  --dur-slow: 500ms;
+
+  --ring: 0 0 0 2px var(--bg), 0 0 0 4px var(--accent);
+
+  color-scheme: light;
+}
+
+[data-theme='dark'] {
+  --bg: #0a0a0a;
+  --bg-soft: #141414;
+  --bg-inverse: #ffffff;
+  --border: #222222;
+  --border-strong: #ffffff;
+
+  --fg: #fafafa;
+  --fg-muted: #a3a3a3;
+  --fg-subtle: #737373;
+  --fg-inverse: #0a0a0a;
+
+  --accent: #ff4d2e;
+  --accent-fg: #0a0a0a;
+  --accent-soft: #2a1210;
+
+  color-scheme: dark;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  :root {
+    --dur-fast: 0ms;
+    --dur-base: 0ms;
+    --dur-slow: 0ms;
+  }
+}
