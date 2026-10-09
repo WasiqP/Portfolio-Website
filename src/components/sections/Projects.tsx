@@ -4,216 +4,225 @@ import { useEffect, useRef, useState } from 'react'
 import Link from 'next/link'
 import { AnimatePresence, motion } from 'framer-motion'
 import { projects } from '@/data/projects'
-import { profile } from '@/data/profile'
-import { usePrefersReducedMotion } from '@/hooks/useMediaQuery'
+import { Reveal } from '@/components/ui/Reveal'
+import { useMediaQuery, usePrefersReducedMotion } from '@/hooks/useMediaQuery'
 
 const ease = [0.16, 1, 0.3, 1] as const
 
 export function Projects() {
+  const canHover = useMediaQuery('(hover: hover) and (pointer: fine) and (min-width: 1024px)')
   const reduced = usePrefersReducedMotion()
-  const [open, setOpen] = useState<number | null>(0)
-  const videoRefs = useRef<(HTMLVideoElement | null)[]>([])
-  const active = open !== null ? projects[open] : null
+  const [activeSlug, setActiveSlug] = useState(projects[0]?.slug ?? '')
+  const active =
+    projects.find((p) => p.slug === activeSlug) ?? projects[0]
+  const videoRef = useRef<HTMLVideoElement | null>(null)
 
   useEffect(() => {
-    videoRefs.current.forEach((video, i) => {
-      if (!video) return
-      if (open === i && !reduced) {
-        void video.play().catch(() => {})
-      } else {
-        video.pause()
-        video.currentTime = 0
-      }
-    })
-  }, [open, reduced])
+    const video = videoRef.current
+    if (!video || !active?.video) return
+    video.load()
+    if (!reduced && canHover) {
+      void video.play().catch(() => {})
+    }
+  }, [active?.slug, active?.video, reduced, canHover])
 
   return (
-    <section id="work" className="page-pad scroll-mt-[var(--nav-h)] py-[var(--section-y)]">
-      <div className="mb-10 flex flex-col gap-3 md:mb-14 md:flex-row md:items-end md:justify-between">
-        <div>
-          <p className="type-mono mb-3 text-xs uppercase tracking-[0.16em] text-fg-subtle">
-            Selected work
+    <section
+      id="work"
+      className="page-pad scroll-mt-[var(--nav-h)] py-[var(--section-y)]"
+    >
+      <Reveal>
+        <div className="mb-10 flex flex-col gap-3 md:mb-12 md:flex-row md:items-end md:justify-between">
+          <div>
+            <p className="type-mono mb-3 text-xs uppercase tracking-[0.16em] text-fg-subtle">
+              Selected work
+            </p>
+            <h2 className="type-display text-[clamp(2.15rem,8vw,4.75rem)]">
+              Problem
+              <span className="text-accent"> → </span>
+              product.
+            </h2>
+          </div>
+          <p className="max-w-xs type-description text-sm md:pb-1">
+            Hover a brief to preview the build. Click to open the full case.
           </p>
-          <h2 className="type-display text-[clamp(2.15rem,8vw,4.75rem)]">
-            Open a title.
-          </h2>
         </div>
-        <p className="max-w-xs type-description text-sm md:pb-1">
-          Pick a case from the grid — the build unfolds below.
-        </p>
-      </div>
+      </Reveal>
 
-      <ul className="grid gap-3 sm:grid-cols-2 sm:gap-4 lg:grid-cols-3">
-        {projects.map((project, i) => {
-          const isOpen = open === i
-          return (
-            <li key={project.slug}>
-              <button
-                type="button"
-                aria-expanded={isOpen}
-                onClick={() => setOpen(isOpen ? null : i)}
-                className={`group flex h-full min-h-[8.5rem] w-full flex-col justify-between rounded-[var(--radius-shell)] border p-5 text-left transition-colors duration-[var(--dur-base)] sm:min-h-[9.5rem] sm:p-6 ${
-                  isOpen
-                    ? 'border-accent bg-accent text-accent-fg'
-                    : 'border-border-strong bg-bg hover:border-accent hover:bg-accent-soft'
-                }`}
-              >
-                <div className="flex items-start justify-between gap-3">
-                  <span
-                    className={`type-mono text-[0.65rem] ${
-                      isOpen ? 'text-accent-fg/70' : 'text-fg-subtle'
-                    }`}
-                  >
-                    {String(i + 1).padStart(2, '0')}
-                  </span>
-                  <span
-                    className={`inline-flex items-center gap-1.5 rounded-md border px-2 py-1 type-mono text-[0.55rem] uppercase tracking-[0.1em] transition-colors ${
-                      isOpen
-                        ? 'border-accent-fg/40 text-accent-fg'
-                        : 'border-border text-fg-muted group-hover:border-accent group-hover:text-accent'
-                    }`}
-                  >
-                    {isOpen ? 'Close' : 'Open'}
-                    <svg
-                      width="12"
-                      height="12"
-                      viewBox="0 0 14 14"
-                      fill="none"
-                      aria-hidden
-                      className={`transition-transform duration-[var(--dur-base)] ${
-                        isOpen ? 'rotate-45' : ''
+      <div className="grid gap-8 lg:grid-cols-[minmax(0,0.85fr)_minmax(28rem,1.2fr)] lg:items-start lg:gap-10 xl:gap-12">
+        {/* Problem → product list */}
+        <div>
+          <div
+            aria-hidden
+            className="mb-2 hidden border-b border-border pb-3 sm:grid sm:grid-cols-[minmax(0,1.4fr)_minmax(0,0.85fr)] sm:gap-6"
+          >
+            <p className="type-mono text-[0.65rem] uppercase tracking-[0.14em] text-fg-subtle">
+              The problem
+            </p>
+            <p className="type-mono text-right text-[0.65rem] uppercase tracking-[0.14em] text-fg-subtle">
+              The product
+            </p>
+          </div>
+
+          <ul className="border-t border-border">
+            {projects.map((project, i) => {
+              const isActive = activeSlug === project.slug
+
+              return (
+                <li key={project.slug}>
+                  <Reveal delay={0.03 * i}>
+                    <Link
+                      href={`/projects/${project.slug}`}
+                      onMouseEnter={() => {
+                        if (canHover) setActiveSlug(project.slug)
+                      }}
+                      onFocus={() => {
+                        if (canHover) setActiveSlug(project.slug)
+                      }}
+                      className={`group grid grid-cols-1 gap-2 border-b border-border py-5 transition-colors sm:grid-cols-[minmax(0,1.4fr)_minmax(0,0.85fr)] sm:items-center sm:gap-6 sm:py-6 ${
+                        isActive && canHover ? 'bg-accent-soft/40' : ''
                       }`}
                     >
-                      <path
-                        d="M7 1.5v11M1.5 7h11"
-                        stroke="currentColor"
-                        strokeWidth="1.6"
-                        strokeLinecap="round"
-                      />
-                    </svg>
-                  </span>
-                </div>
+                      <div className="min-w-0 pr-2">
+                        <p className="type-mono mb-1.5 text-[0.6rem] uppercase tracking-[0.14em] text-fg-subtle sm:hidden">
+                          Problem
+                        </p>
+                        <p
+                          className={`type-heading text-[clamp(1.1rem,2.6vw,1.55rem)] !leading-[1.25] tracking-tight transition-colors ${
+                            isActive && canHover
+                              ? 'text-fg'
+                              : 'text-fg-muted group-hover:text-fg'
+                          }`}
+                        >
+                          {project.problem}
+                        </p>
+                      </div>
 
-                <div>
-                  <span className="type-heading mt-4 block text-[clamp(1.35rem,2.5vw,1.85rem)] tracking-tight">
-                    {project.title}
-                  </span>
-                  <span
-                    className={`mt-1.5 block text-sm ${
-                      isOpen ? 'text-accent-fg/75' : 'text-fg-muted'
-                    }`}
-                  >
-                    {project.tagline}
-                  </span>
-                </div>
-              </button>
-            </li>
-          )
-        })}
-      </ul>
+                      <div className="flex min-w-0 items-center justify-between gap-3 sm:justify-end">
+                        <div className="min-w-0 sm:text-right">
+                          <p className="type-mono mb-1 text-[0.6rem] uppercase tracking-[0.14em] text-fg-subtle sm:hidden">
+                            Product
+                          </p>
+                          <p
+                            className={`type-heading truncate text-base tracking-tight transition-colors sm:text-lg ${
+                              isActive && canHover
+                                ? 'text-accent'
+                                : 'text-fg group-hover:text-accent'
+                            }`}
+                          >
+                            {project.title}
+                          </p>
+                          <p className="mt-0.5 truncate text-xs text-fg-muted sm:text-sm">
+                            {project.tagline}
+                          </p>
+                        </div>
+                        <span
+                          aria-hidden
+                          className={`inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-full border text-xs transition-colors ${
+                            isActive && canHover
+                              ? 'border-accent bg-accent text-accent-fg'
+                              : 'border-border text-fg-muted group-hover:border-accent group-hover:bg-accent group-hover:text-accent-fg'
+                          }`}
+                        >
+                          ↗
+                        </span>
+                      </div>
+                    </Link>
+                  </Reveal>
+                </li>
+              )
+            })}
+          </ul>
+        </div>
 
-      <AnimatePresence initial={false} mode="wait">
-        {active && open !== null ? (
-          <motion.div
-            key={active.slug}
-            initial={reduced ? false : { opacity: 0, y: 16 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={reduced ? undefined : { opacity: 0, y: -10 }}
-            transition={{ duration: 0.4, ease }}
-            className="mt-4 overflow-hidden rounded-[var(--radius-shell)] border border-border-strong sm:mt-5"
-          >
-            <div className="grid lg:grid-cols-[1.4fr_0.9fr]">
-              <div
-                className="relative aspect-[16/10] sm:aspect-[16/9]"
-                style={{ background: active.accent }}
-              >
-                {active.video ? (
-                  <video
-                    ref={(el) => {
-                      videoRefs.current[open] = el
-                    }}
-                    className="absolute inset-0 h-full w-full object-cover"
-                    src={active.video}
-                    muted
-                    playsInline
-                    loop
-                    preload="metadata"
-                  />
-                ) : null}
-                <div className="absolute inset-0 bg-gradient-to-t from-black/55 via-transparent to-transparent" />
-                <p className="absolute bottom-4 left-4 type-mono text-[0.65rem] uppercase tracking-[0.14em] text-white/70 sm:bottom-5 sm:left-5">
-                  {active.year} · preview
-                </p>
-              </div>
+        {/* Large sticky cinema stage — desktop */}
+        <div className="hidden lg:block">
+          <div className="sticky top-[calc(var(--nav-h)+1.25rem)]">
+            <p className="type-mono mb-3 text-[0.65rem] uppercase tracking-[0.14em] text-fg-subtle">
+              Live preview
+            </p>
 
-              <div className="flex flex-col justify-between gap-6 bg-bg p-5 sm:gap-8 sm:p-8">
-                <div>
-                  <p className="type-mono text-[0.65rem] uppercase tracking-[0.14em] text-fg-subtle">
-                    {active.role}
-                  </p>
-                  <h3 className="type-display mt-3 text-[clamp(1.85rem,4vw,2.75rem)]">
-                    {active.title}
-                  </h3>
-                  <p className="type-subheading mt-3 text-xl text-fg">
-                    {active.tagline}
-                  </p>
-                  <p className="mt-4 text-sm leading-relaxed text-fg-muted sm:text-base">
-                    {active.description.length > 280
-                      ? `${active.description.slice(0, 280).trim()}…`
-                      : active.description}
-                  </p>
-                  <ul className="mt-6 flex flex-wrap gap-2">
-                    {active.stack.map((tag) => (
-                      <li
-                        key={tag}
-                        className="rounded-md border border-border px-3 py-1 type-mono text-[0.6rem] text-fg-muted"
-                      >
-                        {tag}
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-
-                <div className="flex flex-col gap-2.5 sm:flex-row sm:flex-wrap sm:gap-3">
-                  <Link
-                    href={`/projects/${active.slug}`}
-                    className="inline-flex w-full items-center justify-center gap-2 rounded-lg bg-bg-inverse px-5 py-3.5 text-xs font-semibold uppercase tracking-[0.1em] text-fg-inverse transition-opacity hover:opacity-90 sm:w-auto sm:px-6"
-                  >
-                    Full case
-                    <span aria-hidden>↗</span>
-                  </Link>
-                  {open < projects.length - 1 ? (
-                    <button
-                      type="button"
-                      onClick={() => setOpen(open + 1)}
-                      className="inline-flex w-full items-center justify-center gap-2 rounded-lg border border-border-strong px-5 py-3.5 text-xs font-semibold uppercase tracking-[0.1em] text-fg transition-colors hover:bg-bg-soft sm:w-auto"
+            <Link
+              href={`/projects/${active.slug}`}
+              className="group/stage block overflow-hidden rounded-[var(--radius-shell)] border border-border bg-bg-inverse transition-colors hover:border-accent"
+            >
+              {/* Landscape stage — contain keeps full website demos in frame */}
+              <div className="relative aspect-video bg-black">
+                <AnimatePresence mode="wait">
+                  {active ? (
+                    <motion.div
+                      key={active.slug}
+                      className="absolute inset-0"
+                      initial={
+                        reduced
+                          ? { opacity: 1 }
+                          : { opacity: 0 }
+                      }
+                      animate={{ opacity: 1 }}
+                      exit={
+                        reduced
+                          ? { opacity: 0 }
+                          : { opacity: 0 }
+                      }
+                      transition={{ duration: 0.35, ease }}
                     >
-                      Next title
-                      <span aria-hidden>→</span>
-                    </button>
+                      {active.video ? (
+                        <video
+                          ref={videoRef}
+                          className="absolute inset-0 h-full w-full object-contain object-center"
+                          src={active.video}
+                          muted
+                          loop
+                          playsInline
+                          preload="metadata"
+                          autoPlay
+                        />
+                      ) : (
+                        <div
+                          className="absolute inset-0"
+                          style={{ background: active.accent }}
+                        />
+                      )}
+                    </motion.div>
                   ) : null}
-                  <a
-                    href={profile.links.upwork}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="inline-flex w-full items-center justify-center gap-2 rounded-lg bg-accent px-5 py-3.5 text-xs font-semibold uppercase tracking-[0.1em] text-accent-fg transition-opacity hover:opacity-90 sm:w-auto"
-                  >
-                    Hire on Upwork
-                    <span aria-hidden>↗</span>
-                  </a>
-                  <button
-                    type="button"
-                    onClick={() => setOpen(null)}
-                    className="inline-flex w-full items-center justify-center gap-2 rounded-lg border border-border px-5 py-3.5 text-xs font-semibold uppercase tracking-[0.1em] text-fg-muted transition-colors hover:text-fg sm:w-auto"
-                  >
-                    Close
-                  </button>
-                </div>
+                </AnimatePresence>
               </div>
-            </div>
-          </motion.div>
-        ) : null}
-      </AnimatePresence>
+
+              <div className="border-t border-white/10 bg-bg-inverse p-5 xl:p-6">
+                <AnimatePresence mode="wait">
+                  {active ? (
+                    <motion.div
+                      key={`${active.slug}-meta`}
+                      initial={reduced ? false : { opacity: 0, y: 8 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={reduced ? undefined : { opacity: 0 }}
+                      transition={{ duration: 0.3, ease }}
+                    >
+                      <p className="type-mono text-[0.65rem] uppercase tracking-[0.14em] text-accent">
+                        {active.year} · case
+                      </p>
+                      <p className="type-heading mt-2 text-xl text-fg-inverse xl:text-2xl">
+                        {active.title}
+                      </p>
+                      <p className="mt-2 text-sm leading-relaxed text-fg-inverse/65">
+                        {active.problem}
+                      </p>
+                      <span className="mt-4 inline-flex items-center gap-2 rounded-full bg-accent px-4 py-2.5 text-[0.65rem] font-semibold uppercase tracking-[0.1em] text-accent-fg transition-opacity group-hover/stage:opacity-90">
+                        Open case
+                        <span aria-hidden>↗</span>
+                      </span>
+                    </motion.div>
+                  ) : null}
+                </AnimatePresence>
+              </div>
+            </Link>
+
+            <p className="mt-3 type-mono text-[0.6rem] uppercase tracking-[0.12em] text-fg-subtle">
+              Hover rows to swap · click any row to open
+            </p>
+          </div>
+        </div>
+      </div>
     </section>
   )
 }

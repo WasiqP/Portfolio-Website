@@ -75,6 +75,9 @@ export default async function ProjectPage({ params }: Props) {
                 <p className="type-mono text-[0.65rem] uppercase tracking-[0.16em] text-accent">
                   {project.role}
                 </p>
+                <p className="mt-5 max-w-xl text-base text-white/55 sm:text-lg">
+                  {project.problem}
+                </p>
                 <h1 className="type-display mt-4 text-[clamp(2.15rem,8vw,5rem)] !leading-[1.05]">
                   {project.title}
                 </h1>

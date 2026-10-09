@@ -16,7 +16,8 @@ export const profile = {
     "If you're looking for a developer who can understand both the technical and business side of a product, I'd be happy to discuss your project.",
   ],
   photo: '/images/Wasiq-Animated.png',
-  introVideo: '/videos/upworkvideos/intro.mp4',
+  introVideo:
+    'https://res.cloudinary.com/euquvsnk/video/upload/v1791541634/intro.mp4',
   education: {
     school: 'NED University of Engineering and Technology',
     degree: 'Bachelor of Science (BS), Computer Science',
