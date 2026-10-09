@@ -3,8 +3,8 @@
 import { useEffect, useRef, useState } from 'react'
 import { AnimatePresence, motion } from 'framer-motion'
 import { terminalCommands } from '@/lib/easter-eggs'
-import { useTheme } from '@/hooks/useTheme'
 import { playSound } from '@/lib/sounds'
+import { applyDocumentTheme, normalizeTheme } from '@/lib/theme'
 
 type Line = { type: 'in' | 'out' | 'sys'; text: string }
 
@@ -14,7 +14,6 @@ type TerminalProps = {
 }
 
 export function Terminal({ open, onClose }: TerminalProps) {
-  const { setTheme } = useTheme()
   const [lines, setLines] = useState<Line[]>([
     { type: 'sys', text: 'portfolio.exe — type `help` to begin' },
   ])
@@ -48,15 +47,27 @@ export function Terminal({ open, onClose }: TerminalProps) {
     }
 
     if (cmd.startsWith('theme ')) {
-      const mode = cmd.split(/\s+/)[1]
-      if (mode === 'light' || mode === 'dark') {
-        setTheme(mode)
+      const arg = cmd.slice(6).trim()
+      if (arg !== 'dark' && arg !== 'brand' && arg !== 'light') {
         setLines((prev) => [
           ...prev,
-          { type: 'out', text: `Theme set to ${mode}.` },
+          { type: 'out', text: 'Usage: theme light | theme dark' },
         ])
         return
       }
+      const next = normalizeTheme(arg)
+      applyDocumentTheme(next)
+      setLines((prev) => [
+        ...prev,
+        {
+          type: 'out',
+          text:
+            next === 'dark'
+              ? 'Dark theme — black / white / lime.'
+              : 'Light theme — white / black / lime.',
+        },
+      ])
+      return
     }
 
     if (cmd.startsWith('open ')) {

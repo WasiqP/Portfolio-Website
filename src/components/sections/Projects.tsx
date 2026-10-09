@@ -1,142 +1,219 @@
 'use client'
 
-import { useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import Link from 'next/link'
-import { projects, type Project } from '@/data/projects'
-import { Reveal } from '@/components/ui/Reveal'
-import { Modal } from '@/components/ui/Modal'
-import { Button } from '@/components/ui/Button'
+import { AnimatePresence, motion } from 'framer-motion'
+import { projects } from '@/data/projects'
+import { profile } from '@/data/profile'
+import { usePrefersReducedMotion } from '@/hooks/useMediaQuery'
 
-function WorkRow({
-  project,
-  index,
-  onOpen,
-}: {
-  project: Project
-  index: number
-  onOpen: () => void
-}) {
-  return (
-    <article className="group border-t border-border last:border-b">
-      <button
-        type="button"
-        onClick={onOpen}
-        className="grid w-full grid-cols-1 gap-6 py-8 text-left md:grid-cols-[minmax(0,1.3fr)_minmax(0,1fr)] md:items-center md:gap-10 md:py-10"
-      >
-        <div
-          className="relative aspect-[16/10] overflow-hidden rounded-[calc(var(--radius-shell)-0.35rem)]"
-          style={{ background: project.accent }}
-        >
-          <div className="absolute inset-0 flex items-end justify-between p-5 sm:p-6">
-            <span className="type-mono text-xs text-white/75">
-              {String(index + 1).padStart(2, '0')}
-            </span>
-            <span className="type-mono text-xs text-white/75">{project.year}</span>
-          </div>
-          <div className="absolute inset-0 grid place-items-center opacity-0 transition-opacity duration-[var(--dur-base)] group-hover:opacity-100">
-            <span className="rounded-[var(--radius-pill)] bg-fg-inverse px-5 py-2.5 type-mono text-[0.65rem] uppercase tracking-[0.14em] text-bg-inverse">
-              Open case
-            </span>
-          </div>
-        </div>
-
-        <div className="px-1 md:pr-4">
-          <div className="flex flex-wrap items-baseline justify-between gap-3">
-            <h3 className="type-heading text-3xl sm:text-4xl md:text-5xl">
-              {project.title}
-            </h3>
-            <span className="type-mono text-[0.65rem] uppercase tracking-[0.12em] text-fg-subtle">
-              {project.role}
-            </span>
-          </div>
-          <p className="type-description mt-4 max-w-md text-base">
-            {project.tagline}
-          </p>
-          <ul className="mt-6 flex flex-wrap gap-2">
-            {project.stack.map((item) => (
-              <li
-                key={item}
-                className="rounded-[var(--radius-pill)] border border-border px-3 py-1 type-mono text-[0.65rem] text-fg-muted"
-              >
-                {item}
-              </li>
-            ))}
-          </ul>
-        </div>
-      </button>
-    </article>
-  )
-}
+const ease = [0.16, 1, 0.3, 1] as const
 
 export function Projects() {
-  const [active, setActive] = useState<Project | null>(null)
+  const reduced = usePrefersReducedMotion()
+  const [open, setOpen] = useState<number | null>(0)
+  const videoRefs = useRef<(HTMLVideoElement | null)[]>([])
+  const active = open !== null ? projects[open] : null
+
+  useEffect(() => {
+    videoRefs.current.forEach((video, i) => {
+      if (!video) return
+      if (open === i && !reduced) {
+        void video.play().catch(() => {})
+      } else {
+        video.pause()
+        video.currentTime = 0
+      }
+    })
+  }, [open, reduced])
 
   return (
-    <section id="work" className="py-[var(--section-y)]">
-      <div className="page-pad">
-        <Reveal>
-          <div className="mb-10 flex flex-col gap-5 md:mb-14 md:flex-row md:items-end md:justify-between">
-            <h2 className="type-display max-w-3xl text-[clamp(2.75rem,8vw,5.5rem)]">
-              Selected
-              <br />
-              Work.
-            </h2>
-            <p className="type-description max-w-sm text-base md:pb-2">
-              Four products. Real constraints. Ask for the full walkthrough — I
-              demo faster than I write case studies.
-            </p>
-          </div>
-        </Reveal>
-
+    <section id="work" className="page-pad scroll-mt-[var(--nav-h)] py-[var(--section-y)]">
+      <div className="mb-10 flex flex-col gap-3 md:mb-14 md:flex-row md:items-end md:justify-between">
         <div>
-          {projects.map((project, i) => (
-            <Reveal key={project.slug} delay={i * 0.05}>
-              <WorkRow
-                project={project}
-                index={i}
-                onOpen={() => setActive(project)}
-              />
-            </Reveal>
-          ))}
+          <p className="type-mono mb-3 text-xs uppercase tracking-[0.16em] text-fg-subtle">
+            Selected work
+          </p>
+          <h2 className="type-display text-[clamp(2.15rem,8vw,4.75rem)]">
+            Open a title.
+          </h2>
         </div>
+        <p className="max-w-xs type-description text-sm md:pb-1">
+          Pick a case from the grid — the build unfolds below.
+        </p>
       </div>
 
-      <Modal
-        open={!!active}
-        onClose={() => setActive(null)}
-        title={active?.title}
-      >
-        {active && (
-          <div className="space-y-6">
-            <div
-              className="aspect-[16/9] w-full rounded-[calc(var(--radius-shell)-0.5rem)]"
-              style={{ background: active.accent }}
-            />
-            <p className="type-subheading text-xl">{active.tagline}</p>
-            <p className="type-body text-fg-muted">{active.description}</p>
-            <ul className="space-y-2">
-              {active.outcomes.map((item) => (
-                <li key={item} className="type-body flex gap-3 text-sm">
-                  <span className="text-accent">→</span>
-                  {item}
-                </li>
-              ))}
-            </ul>
-            <div className="flex flex-wrap gap-3 pt-2">
-              <Button href={`/projects/${active.slug}`}>Full case study</Button>
-              <Button variant="secondary" onClick={() => setActive(null)}>
-                Close
-              </Button>
-              <Link
-                href={`/projects/${active.slug}`}
-                className="sr-only"
+      <ul className="grid gap-3 sm:grid-cols-2 sm:gap-4 lg:grid-cols-3">
+        {projects.map((project, i) => {
+          const isOpen = open === i
+          return (
+            <li key={project.slug}>
+              <button
+                type="button"
+                aria-expanded={isOpen}
+                onClick={() => setOpen(isOpen ? null : i)}
+                className={`group flex h-full min-h-[8.5rem] w-full flex-col justify-between rounded-[var(--radius-shell)] border p-5 text-left transition-colors duration-[var(--dur-base)] sm:min-h-[9.5rem] sm:p-6 ${
+                  isOpen
+                    ? 'border-accent bg-accent text-accent-fg'
+                    : 'border-border-strong bg-bg hover:border-accent hover:bg-accent-soft'
+                }`}
               >
-                Case study
-              </Link>
+                <div className="flex items-start justify-between gap-3">
+                  <span
+                    className={`type-mono text-[0.65rem] ${
+                      isOpen ? 'text-accent-fg/70' : 'text-fg-subtle'
+                    }`}
+                  >
+                    {String(i + 1).padStart(2, '0')}
+                  </span>
+                  <span
+                    className={`inline-flex items-center gap-1.5 rounded-md border px-2 py-1 type-mono text-[0.55rem] uppercase tracking-[0.1em] transition-colors ${
+                      isOpen
+                        ? 'border-accent-fg/40 text-accent-fg'
+                        : 'border-border text-fg-muted group-hover:border-accent group-hover:text-accent'
+                    }`}
+                  >
+                    {isOpen ? 'Close' : 'Open'}
+                    <svg
+                      width="12"
+                      height="12"
+                      viewBox="0 0 14 14"
+                      fill="none"
+                      aria-hidden
+                      className={`transition-transform duration-[var(--dur-base)] ${
+                        isOpen ? 'rotate-45' : ''
+                      }`}
+                    >
+                      <path
+                        d="M7 1.5v11M1.5 7h11"
+                        stroke="currentColor"
+                        strokeWidth="1.6"
+                        strokeLinecap="round"
+                      />
+                    </svg>
+                  </span>
+                </div>
+
+                <div>
+                  <span className="type-heading mt-4 block text-[clamp(1.35rem,2.5vw,1.85rem)] tracking-tight">
+                    {project.title}
+                  </span>
+                  <span
+                    className={`mt-1.5 block text-sm ${
+                      isOpen ? 'text-accent-fg/75' : 'text-fg-muted'
+                    }`}
+                  >
+                    {project.tagline}
+                  </span>
+                </div>
+              </button>
+            </li>
+          )
+        })}
+      </ul>
+
+      <AnimatePresence initial={false} mode="wait">
+        {active && open !== null ? (
+          <motion.div
+            key={active.slug}
+            initial={reduced ? false : { opacity: 0, y: 16 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={reduced ? undefined : { opacity: 0, y: -10 }}
+            transition={{ duration: 0.4, ease }}
+            className="mt-4 overflow-hidden rounded-[var(--radius-shell)] border border-border-strong sm:mt-5"
+          >
+            <div className="grid lg:grid-cols-[1.4fr_0.9fr]">
+              <div
+                className="relative aspect-[16/10] sm:aspect-[16/9]"
+                style={{ background: active.accent }}
+              >
+                {active.video ? (
+                  <video
+                    ref={(el) => {
+                      videoRefs.current[open] = el
+                    }}
+                    className="absolute inset-0 h-full w-full object-cover"
+                    src={active.video}
+                    muted
+                    playsInline
+                    loop
+                    preload="metadata"
+                  />
+                ) : null}
+                <div className="absolute inset-0 bg-gradient-to-t from-black/55 via-transparent to-transparent" />
+                <p className="absolute bottom-4 left-4 type-mono text-[0.65rem] uppercase tracking-[0.14em] text-white/70 sm:bottom-5 sm:left-5">
+                  {active.year} · preview
+                </p>
+              </div>
+
+              <div className="flex flex-col justify-between gap-6 bg-bg p-5 sm:gap-8 sm:p-8">
+                <div>
+                  <p className="type-mono text-[0.65rem] uppercase tracking-[0.14em] text-fg-subtle">
+                    {active.role}
+                  </p>
+                  <h3 className="type-display mt-3 text-[clamp(1.85rem,4vw,2.75rem)]">
+                    {active.title}
+                  </h3>
+                  <p className="type-subheading mt-3 text-xl text-fg">
+                    {active.tagline}
+                  </p>
+                  <p className="mt-4 text-sm leading-relaxed text-fg-muted sm:text-base">
+                    {active.description.length > 280
+                      ? `${active.description.slice(0, 280).trim()}…`
+                      : active.description}
+                  </p>
+                  <ul className="mt-6 flex flex-wrap gap-2">
+                    {active.stack.map((tag) => (
+                      <li
+                        key={tag}
+                        className="rounded-md border border-border px-3 py-1 type-mono text-[0.6rem] text-fg-muted"
+                      >
+                        {tag}
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+
+                <div className="flex flex-col gap-2.5 sm:flex-row sm:flex-wrap sm:gap-3">
+                  <Link
+                    href={`/projects/${active.slug}`}
+                    className="inline-flex w-full items-center justify-center gap-2 rounded-lg bg-bg-inverse px-5 py-3.5 text-xs font-semibold uppercase tracking-[0.1em] text-fg-inverse transition-opacity hover:opacity-90 sm:w-auto sm:px-6"
+                  >
+                    Full case
+                    <span aria-hidden>↗</span>
+                  </Link>
+                  {open < projects.length - 1 ? (
+                    <button
+                      type="button"
+                      onClick={() => setOpen(open + 1)}
+                      className="inline-flex w-full items-center justify-center gap-2 rounded-lg border border-border-strong px-5 py-3.5 text-xs font-semibold uppercase tracking-[0.1em] text-fg transition-colors hover:bg-bg-soft sm:w-auto"
+                    >
+                      Next title
+                      <span aria-hidden>→</span>
+                    </button>
+                  ) : null}
+                  <a
+                    href={profile.links.upwork}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex w-full items-center justify-center gap-2 rounded-lg bg-accent px-5 py-3.5 text-xs font-semibold uppercase tracking-[0.1em] text-accent-fg transition-opacity hover:opacity-90 sm:w-auto"
+                  >
+                    Hire on Upwork
+                    <span aria-hidden>↗</span>
+                  </a>
+                  <button
+                    type="button"
+                    onClick={() => setOpen(null)}
+                    className="inline-flex w-full items-center justify-center gap-2 rounded-lg border border-border px-5 py-3.5 text-xs font-semibold uppercase tracking-[0.1em] text-fg-muted transition-colors hover:text-fg sm:w-auto"
+                  >
+                    Close
+                  </button>
+                </div>
+              </div>
             </div>
-          </div>
-        )}
-      </Modal>
+          </motion.div>
+        ) : null}
+      </AnimatePresence>
     </section>
   )
 }

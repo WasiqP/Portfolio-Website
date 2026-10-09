@@ -56,7 +56,8 @@ export const terminalCommands: Record<
       '  projects    — selected work',
       '  stack       — tools of the trade',
       '  contact     — how to reach me',
-      '  theme light | theme dark',
+      '  theme light — white background',
+      '  theme dark  — black / lime brand',
       '  cheatcode   — classified',
       '  clear       — wipe the screen',
       '  exit        — close terminal',
@@ -64,21 +65,23 @@ export const terminalCommands: Record<
   },
   whoami: {
     output: [
-      'Wasiq — AI Engineer & Full-Stack Developer',
-      'Karachi, Pakistan · Raviro · OTS Global',
+      'Wasiq Patel — SaaS & AI Product Developer',
+      'Karachi, Pakistan · Raviro · Available for hire',
     ],
   },
   projects: {
     output: [
-      'adpilot · groovytake · project-mojo · talentdrobe',
+      'berryhelp · scopeshield · teachtrack · coffee-crew-berry · luxury-jewelry · cold-drink-ecommerce',
       'Type: open <slug>  (or just scroll like a normal person)',
     ],
   },
   stack: {
-    output: ['FastAPI · Next.js · Supabase · Claude API · React Native · Flutter'],
+    output: [
+      'React · Next.js · TypeScript · React Native · FastAPI · Python · PostgreSQL · OpenAI',
+    ],
   },
   contact: {
-    output: ['email: hello@wasiq.dev', 'Also: Upwork · GitHub · LinkedIn'],
+    output: ['email: wasiqpatel224@gmail.com', 'Also: Upwork · GitHub · LinkedIn'],
   },
   cheatcode: {
     output: [

@@ -16,13 +16,15 @@ export function ThemeToggle({ className }: { className?: string }) {
         playSound('toggle')
       }}
       className={cn(
-        'grid h-10 w-10 place-items-center rounded-full border border-border text-sm transition-colors duration-[var(--dur-fast)] hover:border-border-strong',
+        'grid h-10 w-10 place-items-center rounded-full border border-border text-sm transition-colors duration-[var(--dur-fast)] hover:border-border-strong hover:bg-bg-soft',
         className
       )}
       aria-label={isDark ? 'Switch to light theme' : 'Switch to dark theme'}
-      title={isDark ? 'Too dark?' : 'Lights out'}
+      title={isDark ? 'Switch to light' : 'Switch to dark'}
     >
-      <span aria-hidden>{isDark ? '☾' : '☀'}</span>
+      <span aria-hidden className="text-base leading-none">
+        {isDark ? '☾' : '☀'}
+      </span>
     </button>
   )
 }
