@@ -2,7 +2,7 @@ import { Hero } from '@/components/sections/Hero'
 import { About } from '@/components/sections/About'
 import { Stack } from '@/components/sections/Stack'
 import { Services } from '@/components/sections/Services'
-import { Projects } from '@/components/sections/Projects'
+import CinematicChain from '@/components/cinematic/CinematicChain'
 import { Contact } from '@/components/sections/Contact'
 
 export default function HomePage() {
@@ -21,9 +21,14 @@ export default function HomePage() {
         <div className="bg-bg">
           <Stack />
           <Services />
-          <Projects />
-          <Contact />
         </div>
+      </div>
+
+      {/* Company-style cinematic chain (Domain → Work → Full Services → Process → FAQ) */}
+      <CinematicChain />
+
+      <div className="relative z-20 bg-bg">
+        <Contact />
       </div>
     </div>
   )

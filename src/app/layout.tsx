@@ -1,4 +1,5 @@
 import type { Metadata } from 'next'
+import { DM_Sans } from 'next/font/google'
 import { ThemeProvider } from '@/hooks/useTheme'
 import { themeInitScript } from '@/lib/theme'
 import { Navbar } from '@/components/layout/Navbar'
@@ -7,6 +8,13 @@ import { SmoothScroll } from '@/components/layout/SmoothScroll'
 import { InteractiveLayer } from '@/components/interactive/InteractiveLayer'
 import { profile } from '@/data/profile'
 import './globals.css'
+
+/** Powers the `.rv-*` cinematic chain sections (Domain / Work / Services / Process / FAQ). */
+const dmSans = DM_Sans({
+  subsets: ['latin'],
+  variable: '--font-dm-sans',
+  display: 'swap',
+})
 
 export const metadata: Metadata = {
   title: {
@@ -30,7 +38,12 @@ export default function RootLayout({
   children: React.ReactNode
 }>) {
   return (
-    <html lang="en" data-theme="light" suppressHydrationWarning>
+    <html
+      lang="en"
+      data-theme="light"
+      className={dmSans.variable}
+      suppressHydrationWarning
+    >
       <head>
         <script dangerouslySetInnerHTML={{ __html: themeInitScript }} />
       </head>

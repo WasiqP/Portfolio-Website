@@ -1,0 +1,35 @@
+/* ───────────────────────────────────────────────────────────────────────────
+   Cinematic chain design tokens — ported from Company-Portfolio
+   `src/styles/tokens.css` (`--raviro-*`). Read-only reference lives at:
+   c:\Users\WASIQ\Desktop\MyProjects\Company-Portfolio\src\styles\tokens.css
+   Scoped under :root; only consumed by the `.rv-*` cinematic chain sections.
+   ─────────────────────────────────────────────────────────────────────────── */
+:root {
+  --raviro-bg: #ffffff;
+  --raviro-bg-2: #f7f9fc;
+  --raviro-text: #070a0f;
+  --raviro-text-dim: rgba(7, 10, 15, 0.72);
+  --raviro-text-faint: rgba(7, 10, 15, 0.55);
+  --raviro-border: rgba(7, 10, 15, 0.1);
+  --raviro-veil: rgba(255, 255, 255, 0.85);
+
+  /* Approx accents from the original source palette */
+  --raviro-accent-blue: #1e5aae;
+  --raviro-accent-cyan: #09a6d8;
+  --raviro-accent-teal: #1fbf8a;
+
+  --raviro-accent-gradient: linear-gradient(
+    90deg,
+    var(--raviro-accent-blue) 0%,
+    var(--raviro-accent-cyan) 45%,
+    var(--raviro-accent-teal) 100%
+  );
+
+  --raviro-max-width: 1120px;
+  --raviro-gutter: clamp(16px, 4vw, 48px);
+
+  /* Type scale */
+  --raviro-hero: clamp(2.6rem, 4.2vw, 5.1rem);
+  --raviro-h2: clamp(1.7rem, 2.6vw, 2.35rem);
+  --raviro-body: 1.05rem;
+}

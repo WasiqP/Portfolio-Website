@@ -13,6 +13,7 @@ import {
 import Lenis from 'lenis'
 import { usePathname } from 'next/navigation'
 import { usePrefersReducedMotion } from '@/hooks/useMediaQuery'
+import { ScrollTrigger } from '@/lib/gsap'
 
 /** Ease-out quart — settles softly instead of snapping */
 function easeOutQuart(t: number) {
@@ -66,11 +67,18 @@ export function SmoothScroll({ children }: { children: ReactNode }) {
       autoRaf: true,
     })
 
+    lenis.on('scroll', ScrollTrigger.update)
+    const onSettle = () => ScrollTrigger.refresh()
+    window.addEventListener('load', onSettle)
+    const refreshTimer = window.setTimeout(onSettle, 400)
+
     lenisRef.current = lenis
     setReady(true)
     document.documentElement.classList.add('lenis', 'lenis-smooth')
 
     return () => {
+      window.removeEventListener('load', onSettle)
+      window.clearTimeout(refreshTimer)
       document.documentElement.classList.remove('lenis', 'lenis-smooth')
       lenis.destroy()
       lenisRef.current = null
