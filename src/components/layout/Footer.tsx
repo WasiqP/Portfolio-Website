@@ -1,208 +1,108 @@
 import { profile } from '@/data/profile'
 
-/** Decorative comic props — scattered like they fell on the floor. */
-function ComicGround() {
+/**
+ * Soft doodle wallpaper — WhatsApp-chat energy.
+ * One tile of line icons, repeated faintly behind the footer.
+ */
+function FooterWallpaper() {
   return (
-    <div className="footer-ground" aria-hidden="true">
-      <div className="footer-ground-floor" />
+    <div className="footer-wallpaper" aria-hidden="true">
+      <svg className="footer-wallpaper-svg" xmlns="http://www.w3.org/2000/svg">
+        <defs>
+          <pattern
+            id="footer-doodle-tile"
+            width="280"
+            height="280"
+            patternUnits="userSpaceOnUse"
+          >
+            {/* speech bubble */}
+            <g transform="translate(18 22) rotate(-12)" fill="none" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M4 4h28a6 6 0 0 1 6 6v12a6 6 0 0 1-6 6H16l-8 7v-7H4a6 6 0 0 1-6-6V10a6 6 0 0 1 6-6Z" transform="translate(6 0)" />
+              <path d="M14 14h18M14 20h12" />
+            </g>
 
-      {/* Speech bubble — tipped over */}
-      <svg
-        className="footer-prop footer-prop--bubble"
-        viewBox="0 0 120 88"
-        fill="none"
-      >
-        <path
-          d="M12 12h84a10 10 0 0 1 10 10v34a10 10 0 0 1-10 10H48l-18 16v-16H12A10 10 0 0 1 2 56V22A10 10 0 0 1 12 12Z"
-          fill="var(--bg)"
-          stroke="currentColor"
-          strokeWidth="3.5"
-          strokeLinejoin="round"
-        />
-        <path
-          d="M28 34h52M28 48h36"
-          stroke="currentColor"
-          strokeWidth="3.5"
-          strokeLinecap="round"
-        />
-      </svg>
+            {/* coffee mug */}
+            <g transform="translate(120 28) rotate(8)" fill="none" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round">
+              <path d="M4 8h16v18a5 5 0 0 1-5 5H9a5 5 0 0 1-5-5V8Z" />
+              <path d="M20 12h4a5 5 0 0 1 0 10h-4" />
+              <path d="M9 2c0 2.5 2.5 2.5 2.5 5M15 1c0 2.5 2.5 2.5 2.5 5" />
+            </g>
 
-      {/* POW stamp */}
-      <svg
-        className="footer-prop footer-prop--pow"
-        viewBox="0 0 140 90"
-        fill="none"
-      >
-        <path
-          d="M70 6 82 34l30 4-22 20 6 30-26-14-26 14 6-30-22-20 30-4Z"
-          fill="var(--accent)"
-          stroke="currentColor"
-          strokeWidth="3"
-          strokeLinejoin="round"
-        />
-        <text
-          x="70"
-          y="54"
-          textAnchor="middle"
-          fill="currentColor"
-          fontFamily="Poppins, sans-serif"
-          fontWeight="900"
-          fontSize="22"
-          letterSpacing="1"
-        >
-          POW
-        </text>
-      </svg>
+            {/* star */}
+            <g transform="translate(210 18) rotate(18)" fill="none" stroke="currentColor" strokeWidth="1.3" strokeLinejoin="round">
+              <path d="M14 2 16.5 10.5 25 11.2 18.5 16.8 20.5 25 14 20.5 7.5 25 9.5 16.8 3 11.2 11.5 10.5Z" />
+            </g>
 
-      {/* Halftone blob */}
-      <svg
-        className="footer-prop footer-prop--dots"
-        viewBox="0 0 80 56"
-        fill="currentColor"
-      >
-        {Array.from({ length: 5 }).map((_, row) =>
-          Array.from({ length: 7 }).map((_, col) => (
-            <circle
-              key={`${row}-${col}`}
-              cx={8 + col * 10}
-              cy={8 + row * 10}
-              r={1.6 + ((row + col) % 3) * 0.35}
-              opacity={0.35 + ((row * col) % 4) * 0.1}
-            />
-          ))
-        )}
-      </svg>
+            {/* curly braces */}
+            <g transform="translate(40 110) rotate(-6)" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round">
+              <path d="M12 2c-5 0-6 4-6 7.5S7.5 15 5 18s1.5 8 7 8" />
+              <path d="M20 2c5 0 6 4 6 7.5S24.5 15 27 18s-1.5 8-7 8" />
+            </g>
 
-      {/* Speed lines scrap */}
-      <svg
-        className="footer-prop footer-prop--lines"
-        viewBox="0 0 100 40"
-        fill="none"
-        stroke="currentColor"
-        strokeWidth="2.5"
-        strokeLinecap="round"
-      >
-        <path d="M4 8h72M10 20h80M6 32h60" opacity="0.55" />
-      </svg>
+            {/* lightning / zap */}
+            <g transform="translate(160 100) rotate(22)" fill="none" stroke="currentColor" strokeWidth="1.4" strokeLinejoin="round">
+              <path d="M14 2 4 16h8L8 30l16-18h-8L22 2Z" />
+            </g>
 
-      {/* Coffee mug */}
-      <svg
-        className="footer-prop footer-prop--mug"
-        viewBox="0 0 72 64"
-        fill="none"
-      >
-        <path
-          d="M10 14h38v34a10 10 0 0 1-10 10H20A10 10 0 0 1 10 48V14Z"
-          fill="var(--bg)"
-          stroke="currentColor"
-          strokeWidth="3"
-        />
-        <path
-          d="M48 22h8a10 10 0 0 1 0 20h-8"
-          stroke="currentColor"
-          strokeWidth="3"
-        />
-        <path
-          d="M22 6c0 4 4 4 4 8s-4 4-4 8M32 4c0 4 4 4 4 8s-4 4-4 8"
-          stroke="currentColor"
-          strokeWidth="2.5"
-          strokeLinecap="round"
-          opacity="0.7"
-        />
-      </svg>
+            {/* code chevrons */}
+            <g transform="translate(230 95) rotate(-14)" fill="none" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M10 4 2 14l8 10M18 4l8 10-8 10" />
+            </g>
 
-      {/* Ink blot */}
-      <svg
-        className="footer-prop footer-prop--ink"
-        viewBox="0 0 90 50"
-        fill="currentColor"
-      >
-        <path
-          d="M12 28c4-14 18-22 32-20 10 1 16 6 22 4 8-2 14 6 12 14-2 10-12 16-28 18-18 2-32-2-38-8-4-4-4-6 0-8Z"
-          opacity="0.18"
-        />
-        <circle cx="68" cy="12" r="3" opacity="0.25" />
-        <circle cx="76" cy="22" r="2" opacity="0.2" />
-      </svg>
+            {/* sparkle dots */}
+            <g transform="translate(90 150)" fill="currentColor">
+              <circle cx="2" cy="2" r="1.2" />
+              <circle cx="14" cy="8" r="0.9" />
+              <circle cx="6" cy="16" r="1.1" />
+            </g>
 
-      {/* Comic panel corner */}
-      <svg
-        className="footer-prop footer-prop--panel"
-        viewBox="0 0 70 70"
-        fill="none"
-      >
-        <rect
-          x="6"
-          y="6"
-          width="52"
-          height="52"
-          fill="var(--bg)"
-          stroke="currentColor"
-          strokeWidth="3.5"
-        />
-        <path
-          d="M18 44 34 22l12 14 8-10"
-          stroke="currentColor"
-          strokeWidth="3"
-          strokeLinecap="round"
-          strokeLinejoin="round"
-        />
-      </svg>
+            {/* boom burst (small) */}
+            <g transform="translate(20 190) rotate(10)" fill="none" stroke="currentColor" strokeWidth="1.25" strokeLinejoin="round">
+              <path d="M16 2 19 12l10 1.5-8 7 2.5 10L16 25l-7.5 5.5 2.5-10-8-7 10-1.5Z" />
+            </g>
 
-      {/* Star burst */}
-      <svg
-        className="footer-prop footer-prop--star"
-        viewBox="0 0 64 64"
-        fill="var(--accent)"
-        stroke="currentColor"
-        strokeWidth="2.5"
-        strokeLinejoin="round"
-      >
-        <path d="M32 4 38 24l20 2-16 12 6 20-16-10-16 10 6-20L4 26l20-2Z" />
-      </svg>
+            {/* terminal prompt */}
+            <g transform="translate(130 200) rotate(-8)" fill="none" stroke="currentColor" strokeWidth="1.35" strokeLinecap="round">
+              <rect x="2" y="4" width="36" height="24" rx="3" />
+              <path d="M10 16 14 20l-4 4M18 24h10" />
+            </g>
 
-      {/* Curly braces scrap */}
-      <svg
-        className="footer-prop footer-prop--braces"
-        viewBox="0 0 56 48"
-        fill="none"
-        stroke="currentColor"
-        strokeWidth="3.5"
-        strokeLinecap="round"
-      >
-        <path d="M22 6c-8 0-10 6-10 12s2 8-2 12 2 12 10 12" />
-        <path d="M34 6c8 0 10 6 10 12s-2 8 2 12-2 12-10 12" />
-      </svg>
+            {/* paper plane */}
+            <g transform="translate(220 185) rotate(28)" fill="none" stroke="currentColor" strokeWidth="1.35" strokeLinejoin="round">
+              <path d="M2 14 30 2 18 28 14 16Z" />
+              <path d="M14 16 30 2" />
+            </g>
 
-      {/* BAM chip */}
-      <svg
-        className="footer-prop footer-prop--bam"
-        viewBox="0 0 100 44"
-        fill="none"
-      >
-        <rect
-          x="4"
-          y="6"
-          width="92"
-          height="32"
-          rx="4"
-          fill="var(--accent)"
-          stroke="currentColor"
-          strokeWidth="3"
-          transform="rotate(-3 50 22)"
-        />
-        <text
-          x="50"
-          y="28"
-          textAnchor="middle"
-          fill="currentColor"
-          fontFamily="Poppins, sans-serif"
-          fontWeight="900"
-          fontSize="16"
-          letterSpacing="2"
-        >
-          SHIP IT
-        </text>
+            {/* speed ticks */}
+            <g transform="translate(70 70) rotate(35)" fill="none" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round">
+              <path d="M2 4h18M0 10h22M4 16h14" />
+            </g>
+
+            {/* heart doodle */}
+            <g transform="translate(180 155) rotate(-20)" fill="none" stroke="currentColor" strokeWidth="1.35" strokeLinejoin="round">
+              <path d="M12 22C4 15 2 10 2 7a5 5 0 0 1 10-1 5 5 0 0 1 10 1c0 3-2 8-10 15Z" />
+            </g>
+
+            {/* tiny ship tag */}
+            <g transform="translate(95 235) rotate(6)" fill="none" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round">
+              <rect x="2" y="4" width="34" height="14" rx="2" />
+              <path d="M8 11h6M18 11h12" />
+            </g>
+
+            {/* camera / frame */}
+            <g transform="translate(245 230) rotate(-12)" fill="none" stroke="currentColor" strokeWidth="1.3">
+              <rect x="2" y="6" width="22" height="16" rx="2" />
+              <circle cx="13" cy="14" r="4" />
+              <path d="M8 6 10 2h6l2 4" strokeLinecap="round" />
+            </g>
+
+            {/* plus spark */}
+            <g transform="translate(55 250)" fill="none" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round">
+              <path d="M8 2v12M2 8h12" />
+            </g>
+          </pattern>
+        </defs>
+        <rect width="100%" height="100%" fill="url(#footer-doodle-tile)" />
       </svg>
     </div>
   )
@@ -212,8 +112,10 @@ export function Footer() {
   const year = new Date().getFullYear()
 
   return (
-    <footer className="footer-comic page-pad relative overflow-hidden pb-[max(1.25rem,env(safe-area-inset-bottom))] pt-4">
-      <div className="relative z-10 flex flex-col gap-5 border-t border-border pt-8 sm:flex-row sm:items-end sm:justify-between">
+    <footer className="footer-comic page-pad relative overflow-hidden pb-[max(1.5rem,env(safe-area-inset-bottom))] pt-2">
+      <FooterWallpaper />
+
+      <div className="relative z-10 flex flex-col gap-5 border-t border-border pt-10 sm:flex-row sm:items-end sm:justify-between sm:pt-12">
         <div className="max-w-sm">
           <p className="type-mono text-xs text-fg-muted">
             © {year} {profile.fullName}
@@ -250,8 +152,6 @@ export function Footer() {
           </button>
         </div>
       </div>
-
-      <ComicGround />
     </footer>
   )
 }
