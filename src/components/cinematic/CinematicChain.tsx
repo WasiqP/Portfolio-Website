@@ -8,15 +8,19 @@
  * up GSAP/ScrollTrigger behavior + markup.
  */
 
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
+import Link from "next/link";
 import { gsap, ScrollTrigger } from "@/lib/gsap";
+import { useMediaQuery } from "@/hooks/useMediaQuery";
+import { useOptionalLenisScroll } from "@/components/layout/SmoothScroll";
 import {
   FAQ_ITEMS,
   FEATURED_PROJECTS,
   FULL_SERVICE_PILLARS,
   PROCESS_STEPS,
   SERVICE_SPINE_ITEMS,
-  WORK_LANE_ROTATE_MS,
+  cloudinaryVideoLite,
+  cloudinaryVideoPoster,
   type FeaturedProject,
   type ServicePillarIcon,
 } from "@/data/cinematic-content";
@@ -106,50 +110,262 @@ const PILLAR_ICON_MAP: Record<ServicePillarIcon, (props: IconProps) => React.JSX
 };
 
 /* ───────────────────────────────────────────────────────────────────────── */
-/* WorkDetailPlaceholder / WorkDetailPanel                                    */
+/* Work stage — mount every project video once; toggle visibility only        */
 /* ───────────────────────────────────────────────────────────────────────── */
 
-function WorkDetailPlaceholder() {
+type FsVideo = HTMLVideoElement & {
+  webkitEnterFullscreen?: () => void;
+  webkitExitFullscreen?: () => void;
+  webkitDisplayingFullscreen?: boolean;
+  webkitRequestFullscreen?: () => Promise<void> | void;
+};
+
+async function lockLandscape() {
+  try {
+    const orientation = screen.orientation as ScreenOrientation & {
+      lock?: (orientation: string) => Promise<void>;
+    };
+    await orientation.lock?.("landscape");
+  } catch {
+    /* Not available until FS / not supported — browser may still auto-rotate */
+  }
+}
+
+function unlockOrientation() {
+  try {
+    screen.orientation?.unlock?.();
+  } catch {
+    /* noop */
+  }
+}
+
+function isVideoFullscreen(video: FsVideo) {
+  const doc = document as Document & { webkitFullscreenElement?: Element | null };
   return (
-    <div className="rv-work-detail-placeholder">
-      <div className="rv-work-detail-ph-stage" aria-hidden="true" />
-      <p className="rv-work-detail-ph-kicker">Live preview</p>
-      <p className="rv-work-detail-ph-title">Hover a project</p>
-      <p className="rv-work-detail-ph-copy">
-        The video stage on the right updates as you move through the list—no overlay, just a sticky
-        preview beside the work.
-      </p>
-    </div>
+    document.fullscreenElement === video ||
+    doc.webkitFullscreenElement === video ||
+    Boolean(video.webkitDisplayingFullscreen)
   );
 }
 
-function WorkDetailPanel({ project }: { project: FeaturedProject | null }) {
-  if (!project) return <WorkDetailPlaceholder />;
+function WorkVideoStage({
+  projects,
+  activeId,
+  allowFullscreen = false,
+}: {
+  projects: FeaturedProject[];
+  activeId: string;
+  allowFullscreen?: boolean;
+}) {
+  const rootRef = useRef<HTMLDivElement>(null);
+  const videoRefs = useRef<Record<string, FsVideo | null>>({});
+  /** Arm sources once when the stage nears the viewport — never disarm. */
+  const [armed, setArmed] = useState(false);
+  /** Track which videos have enough data to play (survives selection changes). */
+  const [readyIds, setReadyIds] = useState<Record<string, boolean>>({});
+  const [fullscreen, setFullscreen] = useState(false);
+
+  const markReady = (id: string) => {
+    setReadyIds((prev) => (prev[id] ? prev : { ...prev, [id]: true }));
+  };
+
+  useEffect(() => {
+    const root = rootRef.current;
+    if (!root || armed) return;
+    const io = new IntersectionObserver(
+      ([entry]) => {
+        if (!entry?.isIntersecting) return;
+        setArmed(true);
+        io.disconnect();
+      },
+      { rootMargin: "220px 0px", threshold: 0.01 }
+    );
+    io.observe(root);
+    return () => io.disconnect();
+  }, [armed]);
+
+  useEffect(() => {
+    for (const project of projects) {
+      const video = videoRefs.current[project.id];
+      if (!video) continue;
+      if (project.id === activeId) {
+        void video.play().catch(() => {});
+      } else {
+        video.pause();
+      }
+    }
+  }, [activeId, projects, armed]);
+
+  // Sync FS state + unlock landscape when the user exits (gesture / OS back)
+  useEffect(() => {
+    const sync = () => {
+      const video = videoRefs.current[activeId];
+      const on = video ? isVideoFullscreen(video) : Boolean(document.fullscreenElement);
+      setFullscreen(on);
+      if (!on) unlockOrientation();
+    };
+
+    document.addEventListener("fullscreenchange", sync);
+    document.addEventListener("webkitfullscreenchange", sync as EventListener);
+
+    const videos = Object.values(videoRefs.current).filter(Boolean) as FsVideo[];
+    videos.forEach((v) => {
+      v.addEventListener("webkitbeginfullscreen", sync);
+      v.addEventListener("webkitendfullscreen", sync);
+    });
+
+    return () => {
+      document.removeEventListener("fullscreenchange", sync);
+      document.removeEventListener("webkitfullscreenchange", sync as EventListener);
+      videos.forEach((v) => {
+        v.removeEventListener("webkitbeginfullscreen", sync);
+        v.removeEventListener("webkitendfullscreen", sync);
+      });
+    };
+  }, [activeId, armed, projects]);
+
+  // Exit native FS when switching projects
+  useEffect(() => {
+    const video = videoRefs.current[activeId];
+    if (!video || !isVideoFullscreen(video)) {
+      setFullscreen(false);
+      unlockOrientation();
+      return;
+    }
+    void (async () => {
+      try {
+        if (document.fullscreenElement) await document.exitFullscreen();
+        else video.webkitExitFullscreen?.();
+      } catch {
+        /* noop */
+      }
+      unlockOrientation();
+      setFullscreen(false);
+    })();
+  }, [activeId]);
+
+  const toggleNativeFullscreen = async () => {
+    const video = videoRefs.current[activeId];
+    if (!video) return;
+
+    if (isVideoFullscreen(video)) {
+      try {
+        if (document.fullscreenElement) await document.exitFullscreen();
+        else video.webkitExitFullscreen?.();
+      } catch {
+        /* noop */
+      }
+      unlockOrientation();
+      setFullscreen(false);
+      return;
+    }
+
+    void video.play().catch(() => {});
+
+    try {
+      // iOS Safari — native player; typically fills screen & favors landscape
+      if (typeof video.webkitEnterFullscreen === "function") {
+        video.webkitEnterFullscreen();
+        setFullscreen(true);
+        return;
+      }
+
+      if (video.requestFullscreen) {
+        await video.requestFullscreen({ navigationUI: "hide" });
+      } else if (video.webkitRequestFullscreen) {
+        await video.webkitRequestFullscreen();
+      } else {
+        return;
+      }
+
+      await lockLandscape();
+      setFullscreen(true);
+    } catch {
+      setFullscreen(false);
+    }
+  };
+
+  const active = projects.find((p) => p.id === activeId) ?? projects[0];
+  const poster = active?.video ? cloudinaryVideoPoster(active.video) : undefined;
+  const activeReady = Boolean(activeId && readyIds[activeId]);
+  const showLoader = Boolean(active?.video) && (!armed || !activeReady);
+
   return (
-    <div className="rv-work-detail-body">
-      <div className="rv-work-detail-stage">
-        {project.video ? (
+    <div className="rv-work-stage" ref={rootRef}>
+      {poster ? (
+        // eslint-disable-next-line @next/next/no-img-element
+        <img
+          className={`rv-work-stage-poster${activeReady ? " rv-work-stage-poster--dim" : ""}`}
+          src={poster}
+          alt=""
+          width={960}
+          height={540}
+          decoding="async"
+          loading="lazy"
+        />
+      ) : null}
+
+      {projects.map((project) =>
+        project.video ? (
           <video
             key={project.id}
-            className="rv-work-detail-video"
-            src={project.video}
-            autoPlay
+            ref={(el) => {
+              videoRefs.current[project.id] = el;
+            }}
+            className={`rv-work-stage-video${project.id === activeId ? " is-active" : ""}`}
+            src={armed ? cloudinaryVideoLite(project.video) : undefined}
             muted
             loop
             playsInline
             preload="metadata"
-            aria-label={`${project.title} preview`}
+            aria-hidden={project.id !== activeId}
+            onLoadedData={() => markReady(project.id)}
+            onCanPlay={() => markReady(project.id)}
+            onPlaying={() => markReady(project.id)}
           />
-        ) : (
-          <div className="rv-work-detail-stage-fallback" style={{ background: project.gradient }} />
-        )}
-        <div className="rv-work-detail-stage-scrim" aria-hidden="true" />
-        <div className="rv-work-detail-stage-meta">
-          <span className="rv-work-detail-stage-label">Preview</span>
-          <span className="rv-work-detail-stage-year">{project.year}</span>
-        </div>
+        ) : null
+      )}
+
+      <div className="rv-work-stage-scrim" aria-hidden="true" />
+      <div className="rv-work-stage-badge">
+        <span>Preview</span>
+        <span>{active?.year}</span>
       </div>
 
+      {allowFullscreen && active?.video ? (
+        <button
+          type="button"
+          className={`rv-work-stage-expand${fullscreen ? " is-on" : ""}`}
+          aria-pressed={fullscreen}
+          onClick={() => {
+            void toggleNativeFullscreen();
+          }}
+        >
+          {fullscreen ? "Exit" : "Fullscreen"}
+        </button>
+      ) : null}
+
+      {showLoader ? (
+        <div className="rv-work-stage-loader" role="status" aria-live="polite">
+          <span className="rv-work-stage-spinner" aria-hidden="true" />
+          <span className="rv-work-stage-loader-label">
+            {!armed ? "Preparing preview…" : "Loading video…"}
+          </span>
+        </div>
+      ) : null}
+    </div>
+  );
+}
+
+function WorkDetailCard({ project }: { project: FeaturedProject }) {
+  const [navigating, setNavigating] = useState(false);
+
+  useEffect(() => {
+    setNavigating(false);
+  }, [project.id]);
+
+  return (
+    <div className="rv-work-detail-body">
       <div className="rv-work-detail-copy">
         <p className="rv-work-detail-scope">{project.scope}</p>
         <h3 className="rv-work-detail-title">{project.title}</h3>
@@ -161,11 +377,6 @@ function WorkDetailPanel({ project }: { project: FeaturedProject | null }) {
           {project.year}
         </p>
         <p className="rv-work-detail-desc">{project.desc}</p>
-        <ul className="rv-work-detail-highlights" role="list">
-          {project.highlights.slice(0, 3).map((line) => (
-            <li key={line}>{line}</li>
-          ))}
-        </ul>
         <div className="rv-work-detail-stack" aria-label="Technologies">
           {project.stack.map((tag) => (
             <span key={tag} className="rv-work-detail-tag">
@@ -173,12 +384,17 @@ function WorkDetailPanel({ project }: { project: FeaturedProject | null }) {
             </span>
           ))}
         </div>
-        <a href={project.href} className="rv-work-detail-cta">
-          View case
+        <Link
+          href={project.href}
+          className={`rv-work-detail-cta${navigating ? " rv-work-detail-cta--pending" : ""}`}
+          aria-busy={navigating}
+          onClick={() => setNavigating(true)}
+        >
+          {navigating ? "Opening case…" : "View case"}
           <span className="rv-work-detail-cta-arrow" aria-hidden="true">
-            →
+            {navigating ? "" : "→"}
           </span>
-        </a>
+        </Link>
       </div>
     </div>
   );
@@ -189,78 +405,73 @@ function WorkDetailPanel({ project }: { project: FeaturedProject | null }) {
 /* ───────────────────────────────────────────────────────────────────────── */
 
 export default function CinematicChain() {
-  const [hoveredProject, setHoveredProject] = useState<FeaturedProject | null>(null);
-  const [activeWorkPillarIdx, setActiveWorkPillarIdx] = useState(0);
-  const [workAutoPaused, setWorkAutoPaused] = useState(false);
+  const [activeProjectId, setActiveProjectId] = useState(
+    () => FEATURED_PROJECTS[0]?.id ?? ""
+  );
+  const [mobileSheetOpen, setMobileSheetOpen] = useState(false);
   const [svcPillarFocus, setSvcPillarFocus] = useState<string | null>(null);
   const [svcPillarHoverAllowed, setSvcPillarHoverAllowed] = useState(false);
   const [openFaqId, setOpenFaqId] = useState<string | null>(null);
 
   const workSectionRef = useRef<HTMLElement>(null);
-  const workProjectsScrollRef = useRef<HTMLDivElement>(null);
-  const workPracticeStripRef = useRef<HTMLElement>(null);
-  const workPracticeCardRefs = useRef<(HTMLDivElement | null)[]>([]);
-
   const processTrackRef = useRef<HTMLDivElement>(null);
   const processLineFillRef = useRef<HTMLDivElement>(null);
+  const isCompactWork = useMediaQuery("(max-width: 1099px)");
+  const lenis = useOptionalLenisScroll();
 
-  const activeWorkPillar = FULL_SERVICE_PILLARS[activeWorkPillarIdx] ?? FULL_SERVICE_PILLARS[0];
-  const activeWorkPillarId = activeWorkPillar?.id ?? "ai-data";
-  const visibleWorkProjects = useMemo(
-    () => FEATURED_PROJECTS.filter((p) => p.pillarId === activeWorkPillarId),
-    [activeWorkPillarId]
+  const activeProject = useMemo(
+    () =>
+      FEATURED_PROJECTS.find((p) => p.id === activeProjectId) ??
+      FEATURED_PROJECTS[0] ??
+      null,
+    [activeProjectId]
   );
 
-  const activeProject =
-    hoveredProject && visibleWorkProjects.some((p) => p.id === hoveredProject.id)
-      ? hoveredProject
-      : (visibleWorkProjects[0] ?? null);
+  const selectProject = (id: string) => {
+    setActiveProjectId(id);
+    if (isCompactWork) setMobileSheetOpen(true);
+  };
 
-  const focusWorkProjectsForPillar = useCallback((pillarId: string) => {
-    const idx = FULL_SERVICE_PILLARS.findIndex((p) => p.id === pillarId);
-    if (idx >= 0) setActiveWorkPillarIdx(idx);
-    setHoveredProject(null);
-    requestAnimationFrame(() => {
-      workProjectsScrollRef.current?.scrollIntoView({
-        behavior: prefersReducedMotion() ? "auto" : "smooth",
-        block: "start",
-      });
-    });
-  }, []);
+  const closeMobileSheet = () => setMobileSheetOpen(false);
 
-  // Selected Work — auto-rotate practice lane (timer resets when lane changes)
+  // Freeze Lenis + native scroll while the mobile preview sheet is open
   useEffect(() => {
-    const reduced = prefersReducedMotion();
-    if (reduced) return undefined;
-    if (workAutoPaused) return undefined;
+    if (!mobileSheetOpen || !isCompactWork) return;
 
-    const id = window.setInterval(() => {
-      setActiveWorkPillarIdx((i) => (i + 1) % FULL_SERVICE_PILLARS.length);
-      setHoveredProject(null);
-    }, WORK_LANE_ROTATE_MS);
-    return () => window.clearInterval(id);
-  }, [workAutoPaused, activeWorkPillarIdx]);
+    const html = document.documentElement;
+    const body = document.body;
+    const prevHtmlOverflow = html.style.overflow;
+    const prevBodyOverflow = body.style.overflow;
+    const prevTouchAction = body.style.touchAction;
 
-  // Move a soft spotlight behind the active practice card (desktop + tablet)
-  useEffect(() => {
-    const strip = workPracticeStripRef.current;
-    const activeEl = workPracticeCardRefs.current?.[activeWorkPillarIdx];
-    if (!strip || !activeEl) return;
+    lenis?.stop();
+    html.style.overflow = "hidden";
+    body.style.overflow = "hidden";
+    body.style.touchAction = "none";
+    html.classList.add("rv-work-sheet-lock");
 
-    const setVars = () => {
-      const stripRect = strip.getBoundingClientRect();
-      const cardRect = activeEl.getBoundingClientRect();
-      const x = Math.max(0, cardRect.left - stripRect.left);
-      const w = Math.max(1, cardRect.width);
-      strip.style.setProperty("--work-spot-x", `${x}px`);
-      strip.style.setProperty("--work-spot-w", `${w}px`);
+    return () => {
+      html.style.overflow = prevHtmlOverflow;
+      body.style.overflow = prevBodyOverflow;
+      body.style.touchAction = prevTouchAction;
+      html.classList.remove("rv-work-sheet-lock");
+      lenis?.start();
     };
+  }, [mobileSheetOpen, isCompactWork, lenis]);
+  // Close sheet when returning to desktop layout
+  useEffect(() => {
+    if (!isCompactWork) setMobileSheetOpen(false);
+  }, [isCompactWork]);
 
-    setVars();
-    const onResize = () => setVars();
-    window.addEventListener("resize", onResize);
-    return () => window.removeEventListener("resize", onResize);
-  }, [activeWorkPillarIdx]);
+  // Escape closes mobile sheet
+  useEffect(() => {
+    if (!mobileSheetOpen) return;
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") closeMobileSheet();
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [mobileSheetOpen]);
 
   // Services pillar hover-focus only on wide pointer-capable viewports
   useEffect(() => {
@@ -388,196 +599,93 @@ export default function CinematicChain() {
 
   return (
     <div className="rv-rising-layer">
-        {/* === SELECTED WORK === */}
-        <section
-          className="rv-work"
-          id="work"
-          ref={workSectionRef}
-          onPointerEnter={() => setWorkAutoPaused(true)}
-          onPointerLeave={(e) => {
-            const rel = e.relatedTarget;
-            if (rel instanceof Node && workSectionRef.current?.contains(rel)) return;
-            setWorkAutoPaused(false);
-            setHoveredProject(null);
-          }}
-          onFocusCapture={() => setWorkAutoPaused(true)}
-          onBlurCapture={(e) => {
-            const rel = e.relatedTarget;
-            if (rel instanceof Node && workSectionRef.current?.contains(rel)) return;
-            setWorkAutoPaused(false);
-            setHoveredProject(null);
-          }}
-        >
+        {/* === SELECTED WORK (simple list + one-time video mount) === */}
+        <section className="rv-work" id="work" ref={workSectionRef}>
           <div className="rv-work-inner">
             <header className="rv-work-header rv-reveal">
               <p className="rv-eyebrow">Selected Work</p>
+              <h2 className="rv-work-heading">Projects I&apos;ve shipped.</h2>
               <p className="rv-work-lede">
-                I work as one person across AI &amp; data, software &amp; cloud, and brand &amp;
-                production. Below are spotlight engagements—hover for detail—while every practice
-                lane is spelled out in Services just after this section.
+                {isCompactWork
+                  ? "Tap a project to open its preview. Close the sheet to pick another—no scrolling up and down."
+                  : "Select a project to preview it. Videos load once when this section enters view."}{" "}
+                Full practice map is in <a href="#full-services">Services</a> below.
               </p>
             </header>
 
-            <nav
-              ref={workPracticeStripRef}
-              className="rv-work-practice-strip rv-reveal"
-              aria-label="Practices I ship across"
-              style={{ "--work-spot-bg": activeWorkPillar?.spotlight ?? "rgba(10, 10, 10, 0.08)" } as React.CSSProperties}
-            >
-              <span className="rv-work-practice-spotlight" aria-hidden="true" />
-              <div className="rv-work-practice-cards">
-                {FULL_SERVICE_PILLARS.map((pillar) => {
-                  const PNavIcon = PILLAR_ICON_MAP[pillar.icon];
-                  const isActive = pillar.id === activeWorkPillarId;
-                  const pillarIdx = FULL_SERVICE_PILLARS.findIndex((p) => p.id === pillar.id);
-                  return (
-                    <div
-                      key={pillar.id}
-                      role="button"
-                      tabIndex={0}
-                      className={`rv-work-practice-card${isActive ? " rv-work-practice-card--active" : ""}`}
-                      aria-label={`Show spotlight projects for ${pillar.title}`}
-                      onClick={() => focusWorkProjectsForPillar(pillar.id)}
-                      onKeyDown={(e) => {
-                        if (e.key !== "Enter" && e.key !== " ") return;
-                        if (e.target instanceof HTMLElement && e.target.closest("a")) return;
-                        e.preventDefault();
-                        focusWorkProjectsForPillar(pillar.id);
-                      }}
-                      onMouseEnter={() => {
-                        setActiveWorkPillarIdx(pillarIdx);
-                        setHoveredProject(null);
-                      }}
-                      onFocus={() => {
-                        setActiveWorkPillarIdx(pillarIdx);
-                        setHoveredProject(null);
-                      }}
-                      ref={(el) => {
-                        if (pillarIdx >= 0) workPracticeCardRefs.current[pillarIdx] = el;
-                      }}
-                    >
-                      <span className="rv-work-practice-card-top">
-                        <span className="rv-work-practice-num" aria-hidden="true">
-                          {pillar.num}
-                        </span>
-                        <span className="rv-work-practice-icon" aria-hidden="true">
-                          <PNavIcon />
-                        </span>
-                      </span>
-                      <span className="rv-work-practice-title">{pillar.title}</span>
-                      <span className="rv-work-practice-line">{pillar.coverLine}</span>
-                      <a
-                        className="rv-work-practice-cta"
-                        href={`#service-pillar-${pillar.id}`}
-                        onClick={(e) => e.stopPropagation()}
-                      >
-                        Open in Services
-                        <span aria-hidden="true">→</span>
-                      </a>
-                    </div>
-                  );
-                })}
-              </div>
-              <a className="rv-work-practice-all" href="#full-services">
-                Full capability map
-                <span aria-hidden="true">→</span>
-              </a>
-            </nav>
-
-            <div className="rv-work-rotate" aria-label="Practice lane steps">
-              <div className="rv-work-rotate-steps" aria-hidden="true">
-                {FULL_SERVICE_PILLARS.map((pillar, i) => {
-                  const short =
-                    pillar.id === "ai-data" ? "AI & Data" : pillar.id === "it-software" ? "Software" : "Creative";
-                  return (
-                    <span
-                      key={pillar.id}
-                      className={`rv-work-rotate-step${i === activeWorkPillarIdx ? " rv-work-rotate-step--active" : ""}`}
-                      title={pillar.title}
-                    >
-                      <span className="rv-work-rotate-step-num">{pillar.num}</span>
-                      <span className="rv-work-rotate-step-label">{short}</span>
-                    </span>
-                  );
-                })}
-              </div>
-              <p className="rv-work-rotate-hint">
-                {prefersReducedMotion()
-                  ? "Practice lanes are listed above; click a card to jump to its projects, or use Open in Services for the full write-up."
-                  : workAutoPaused
-                    ? "Paused while you explore—move the pointer out of this section to resume the lane loop."
-                    : `Lanes advance every ${WORK_LANE_ROTATE_MS / 1000} seconds while you are away from this section.`}
-              </p>
-            </div>
-
-            <div className="rv-work-layout" id="work-project-list" ref={workProjectsScrollRef}>
+            <div className="rv-work-layout" id="work-project-list">
               <div className="rv-work-col-list">
-                <div
-                  className="rv-work-list"
-                  onPointerLeave={(e) => {
-                    const rel = e.relatedTarget;
-                    if (rel instanceof Node && e.currentTarget.contains(rel)) return;
-                    setHoveredProject(null);
-                  }}
-                >
-                  {visibleWorkProjects.map((project, i) => (
-                    <a
-                      key={project.id}
-                      href={project.href}
-                      className={`rv-work-row${activeProject?.id === project.id ? " rv-work-row--active" : ""}`}
-                      onMouseEnter={() => setHoveredProject(project)}
-                      onFocus={() => setHoveredProject(project)}
-                      onBlur={(e) => {
-                        window.requestAnimationFrame(() => {
-                          const list = e.currentTarget.closest(".rv-work-list");
-                          if (list && !list.contains(document.activeElement)) {
-                            setHoveredProject(null);
-                          }
-                        });
-                      }}
-                    >
-                      <span className="rv-work-row-num">{String(i + 1).padStart(2, "0")}</span>
-                      <div className="rv-work-row-main">
-                        <span className="rv-work-row-title">{project.title}</span>
-                        <span className="rv-work-row-scope">{project.scope}</span>
-                        <div className="rv-work-row-details">
-                          <div className="rv-work-row-details-inner">
-                            <span className="rv-work-row-desc">{project.desc}</span>
-                            <div className="rv-work-row-extras" aria-hidden="true">
-                              <ul className="rv-work-row-highlights">
-                                {project.highlights.map((line) => (
-                                  <li key={line}>{line}</li>
-                                ))}
-                              </ul>
-                              <div className="rv-work-row-tags">
-                                {project.stack.map((tag) => (
-                                  <span key={tag} className="rv-work-row-tag">
-                                    {tag}
-                                  </span>
-                                ))}
-                              </div>
-                            </div>
+                <ul className="rv-work-list" role="list">
+                  {FEATURED_PROJECTS.map((project, i) => {
+                    const isActive = activeProject?.id === project.id;
+                    return (
+                      <li key={project.id}>
+                        <button
+                          type="button"
+                          className={`rv-work-row${isActive ? " rv-work-row--active" : ""}`}
+                          aria-pressed={isActive}
+                          aria-haspopup={isCompactWork ? "dialog" : undefined}
+                          onClick={() => selectProject(project.id)}
+                        >
+                          <span className="rv-work-row-num" aria-hidden="true">
+                            {String(i + 1).padStart(2, "0")}
+                          </span>
+                          <div className="rv-work-row-main">
+                            <span className="rv-work-row-title">{project.title}</span>
+                            <span className="rv-work-row-scope">{project.scope}</span>
                           </div>
-                        </div>
-                      </div>
-                      <span className="rv-work-row-cat">{project.category}</span>
-                      <span className="rv-work-row-year">{project.year}</span>
-                      <span className="rv-work-row-arrow" aria-hidden="true">
-                        &#8599;
-                      </span>
-                    </a>
-                  ))}
-                </div>
+                          <span className="rv-work-row-year">{project.year}</span>
+                        </button>
+                      </li>
+                    );
+                  })}
+                </ul>
               </div>
 
-              <aside className="rv-work-col-detail" aria-live="polite" aria-label="Project snapshot">
+              <aside
+                className={`rv-work-col-detail${mobileSheetOpen ? " rv-work-col-detail--sheet-open" : ""}`}
+                aria-live="polite"
+                aria-label="Project preview"
+                {...(isCompactWork
+                  ? {
+                      role: "dialog" as const,
+                      "aria-modal": true as const,
+                      "aria-hidden": !mobileSheetOpen,
+                    }
+                  : {})}
+              >
+                {isCompactWork ? (
+                  <button
+                    type="button"
+                    className="rv-work-sheet-backdrop"
+                    aria-label="Close preview"
+                    tabIndex={mobileSheetOpen ? 0 : -1}
+                    onClick={closeMobileSheet}
+                  />
+                ) : null}
                 <div className="rv-work-detail-card">
-                  <WorkDetailPanel key={activeProject?.id ?? "__none__"} project={activeProject} />
+                  {isCompactWork ? (
+                    <div className="rv-work-sheet-chrome">
+                      <span className="rv-work-sheet-handle" aria-hidden="true" />
+                      <button
+                        type="button"
+                        className="rv-work-sheet-close"
+                        onClick={closeMobileSheet}
+                      >
+                        Close
+                      </button>
+                    </div>
+                  ) : null}
+                  <WorkVideoStage
+                    projects={FEATURED_PROJECTS}
+                    activeId={activeProject?.id ?? FEATURED_PROJECTS[0]?.id ?? ""}
+                    allowFullscreen
+                  />
+                  {activeProject ? <WorkDetailCard project={activeProject} /> : null}
                 </div>
               </aside>
             </div>
           </div>
-
         </section>
 
         {/* === FULL SERVICES (capability map) === */}

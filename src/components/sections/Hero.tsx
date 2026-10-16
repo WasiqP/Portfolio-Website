@@ -12,7 +12,7 @@ export function Hero() {
   return (
     <section
       id="top"
-      className="page-pad flex flex-col justify-center py-3 sm:py-4 md:py-6 lg:h-[calc(100dvh-var(--nav-h))]"
+      className="hero-stage page-pad flex flex-col justify-center py-3 sm:py-4 md:py-6"
     >
       <div className="relative flex min-h-0 flex-1 overflow-hidden rounded-[var(--radius-shell)] border border-border bg-bg-inverse text-fg-inverse">
         <div className="relative grid min-h-0 w-full flex-1 lg:grid-cols-[1.15fr_0.95fr]">

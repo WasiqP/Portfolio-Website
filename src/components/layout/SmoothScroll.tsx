@@ -31,6 +31,10 @@ type LenisContextValue = {
     target: string | number | HTMLElement,
     options?: ScrollToOptions
   ) => void
+  /** Pause smooth scroll (modals / sheets) */
+  stop: () => void
+  /** Resume smooth scroll */
+  start: () => void
 }
 
 const LenisContext = createContext<LenisContextValue | null>(null)
@@ -117,6 +121,16 @@ export function SmoothScroll({ children }: { children: ReactNode }) {
     [reduced]
   )
 
+  const stop = useCallback(() => {
+    lenisRef.current?.stop()
+    document.documentElement.classList.add('lenis-stopped')
+  }, [])
+
+  const start = useCallback(() => {
+    document.documentElement.classList.remove('lenis-stopped')
+    lenisRef.current?.start()
+  }, [])
+
   // Arrive on a hash route (e.g. /#contact from another page)
   useEffect(() => {
     if (!ready && !reduced) return
@@ -130,8 +144,7 @@ export function SmoothScroll({ children }: { children: ReactNode }) {
     return () => window.clearTimeout(id)
   }, [pathname, ready, reduced, scrollTo])
 
-  const value = useMemo(() => ({ scrollTo }), [scrollTo])
-
+  const value = useMemo(() => ({ scrollTo, stop, start }), [scrollTo, stop, start])
   return (
     <LenisContext.Provider value={value}>{children}</LenisContext.Provider>
   )

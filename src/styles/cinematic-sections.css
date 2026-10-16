@@ -1078,11 +1078,187 @@
     }
 }
 
+.rv-work-heading {
+    margin: 0 0 clamp(0.75rem, 1.5vw, 1rem);
+    font-family: var(--font-sans), "Poppins", ui-sans-serif, system-ui, sans-serif;
+    font-size: clamp(2rem, 4.5vw, 3.25rem);
+    font-weight: 900;
+    letter-spacing: -0.04em;
+    line-height: 1.05;
+    color: #0a0a0a;
+}
+
+.rv-work-lede a {
+    color: inherit;
+    text-decoration: underline;
+    text-underline-offset: 0.18em;
+}
+
 .rv-work-layout {
     display: grid;
     grid-template-columns: minmax(0, 1.05fr) minmax(320px, 0.95fr);
     gap: clamp(28px, 4vw, 56px);
     align-items: start;
+}
+
+/* Persistent video stage — all sources mount once when armed */
+.rv-work-stage {
+    position: relative;
+    aspect-ratio: 16 / 10;
+    width: 100%;
+    background: #050505;
+    overflow: hidden;
+}
+
+.rv-work-stage-poster {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: opacity 0.35s ease;
+    z-index: 0;
+}
+
+.rv-work-stage-poster--dim {
+    opacity: 0;
+    pointer-events: none;
+}
+
+.rv-work-stage-video {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    opacity: 0;
+    visibility: hidden;
+    z-index: 1;
+    transition: opacity 0.25s ease;
+}
+
+.rv-work-stage-video.is-active {
+    opacity: 1;
+    visibility: visible;
+}
+
+.rv-work-stage-scrim {
+    position: absolute;
+    inset: 0;
+    z-index: 2;
+    pointer-events: none;
+    background: linear-gradient(
+        180deg,
+        rgba(0, 0, 0, 0.35) 0%,
+        transparent 42%,
+        rgba(0, 0, 0, 0.35) 100%
+    );
+}
+
+.rv-work-stage-badge {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    z-index: 3;
+    display: flex;
+    justify-content: space-between;
+    padding: 0.85rem 1rem;
+    font-size: 0.65rem;
+    font-weight: 700;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: rgba(255, 255, 255, 0.7);
+    pointer-events: none;
+}
+
+.rv-work-stage-badge span:first-child {
+    color: #ccff8b;
+}
+
+.rv-work-stage-expand {
+    position: absolute;
+    right: 0.75rem;
+    bottom: 0.75rem;
+    z-index: 5;
+    border: 1px solid rgba(255, 255, 255, 0.28);
+    background: rgba(0, 0, 0, 0.55);
+    color: #fafafa;
+    border-radius: 999px;
+    padding: 0.45rem 0.85rem;
+    font-size: 0.68rem;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    cursor: pointer;
+    backdrop-filter: blur(6px);
+}
+
+.rv-work-stage-expand:hover,
+.rv-work-stage-expand.is-on {
+    border-color: #ccff8b;
+    color: #0a0a0a;
+    background: #ccff8b;
+}
+
+/* Native fullscreen (YouTube-style) — fill the screen, prefer landscape */
+.rv-work-stage-video:fullscreen,
+.rv-work-stage-video:-webkit-full-screen {
+    width: 100vw;
+    width: 100dvw;
+    height: 100vh;
+    height: 100dvh;
+    max-width: none;
+    max-height: none;
+    object-fit: contain;
+    background: #000;
+    opacity: 1 !important;
+    visibility: visible !important;
+}
+
+.rv-work-stage-loader {
+    position: absolute;
+    inset: 0;
+    z-index: 4;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 0.75rem;
+    background: rgba(5, 5, 5, 0.45);
+    backdrop-filter: blur(2px);
+    pointer-events: none;
+}
+
+.rv-work-stage-spinner {
+    width: 1.75rem;
+    height: 1.75rem;
+    border-radius: 999px;
+    border: 2px solid rgba(255, 255, 255, 0.22);
+    border-top-color: #ccff8b;
+    animation: rv-work-spin 0.7s linear infinite;
+}
+
+.rv-work-stage-loader-label {
+    font-size: 0.72rem;
+    font-weight: 700;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: rgba(255, 255, 255, 0.88);
+}
+
+@keyframes rv-work-spin {
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .rv-work-stage-spinner {
+        animation: none;
+        border-top-color: #ccff8b;
+        opacity: 0.85;
+    }
 }
 
 .rv-work-col-list {
@@ -1231,7 +1407,22 @@
     flex-direction: column;
     gap: 0.65rem;
     padding: clamp(18px, 2.2vw, 26px);
+    padding-bottom: clamp(22px, 3vw, 32px);
     flex: 1;
+}
+
+.rv-work-sheet-backdrop {
+    position: absolute;
+    inset: 0;
+    border: none;
+    margin: 0;
+    padding: 0;
+    background: rgba(0, 0, 0, 0.5);
+    cursor: pointer;
+}
+
+.rv-work-sheet-chrome {
+    display: none;
 }
 
 @keyframes rvWorkDetailEnter {
@@ -1388,6 +1579,12 @@
     color: #0a0a0a;
 }
 
+.rv-work-detail-cta--pending {
+    opacity: 0.72;
+    pointer-events: none;
+    cursor: progress;
+}
+
 .rv-work-detail-cta-arrow {
     transition: transform 0.25s ease;
 }
@@ -1396,32 +1593,47 @@
     transform: translateX(3px);
 }
 
-/* --- Project rows (typographic list) --- */
+/* --- Project rows (click to select — no hover remount) --- */
 .rv-work-list {
     display: flex;
     flex-direction: column;
+    list-style: none;
+    margin: 0;
+    padding: 0;
     border-top: 1px solid rgba(10, 10, 10, 0.1);
 }
 
 .rv-work-row {
     display: grid;
-    grid-template-columns: 3.5rem 1fr auto auto 2rem;
+    grid-template-columns: 3.5rem 1fr auto;
     gap: clamp(12px, 2vw, 32px);
     align-items: start;
-    padding: clamp(28px, 3.5vw, 48px) 0;
+    width: 100%;
+    padding: clamp(22px, 3vw, 36px) 0.35rem;
+    margin: 0;
+    border: none;
     border-bottom: 1px solid rgba(10, 10, 10, 0.1);
-    text-decoration: none;
+    border-radius: 0;
+    background: transparent;
+    text-align: left;
+    font: inherit;
     color: inherit;
+    cursor: pointer;
     position: relative;
     transition: background 0.18s ease;
 }
 
 .rv-work-row--active {
-    background: rgba(204, 255, 139, 0.08);
+    background: rgba(204, 255, 139, 0.12);
 }
 
 .rv-work-row:hover {
-    background: rgba(10, 10, 10, 0.02);
+    background: rgba(10, 10, 10, 0.025);
+}
+
+.rv-work-row:focus-visible {
+    outline: 2px solid rgba(10, 10, 10, 0.45);
+    outline-offset: 2px;
 }
 
 .rv-work-row::after {
@@ -1813,20 +2025,115 @@
     }
 }
 
-/* Responsive */
+/* Responsive — list first; preview opens as a bottom sheet (no scroll ping-pong) */
 @media (max-width: 1099px) {
     .rv-work-layout {
-        grid-template-columns: 1fr;
+        display: block;
     }
 
     .rv-work-col-detail {
-        position: static;
-        order: -1;
+        position: fixed;
+        inset: 0;
+        z-index: 90;
+        display: flex;
+        align-items: flex-end;
+        justify-content: center;
+        padding: 0;
+        opacity: 0;
+        visibility: hidden;
+        pointer-events: none;
+        overscroll-behavior: none;
+        touch-action: none;
+        transition: opacity 0.28s ease, visibility 0.28s ease;
+    }
+
+    .rv-work-col-detail--sheet-open {
+        opacity: 1;
+        visibility: visible;
+        pointer-events: auto;
+    }
+
+    .rv-work-sheet-backdrop {
+        touch-action: none;
+    }
+
+    .rv-work-sheet-chrome {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 1rem;
+        padding: 0.65rem 1rem 0.35rem;
+        background: #0a0a0a;
+        position: sticky;
+        top: 0;
+        z-index: 2;
+    }
+
+    .rv-work-sheet-handle {
+        display: block;
+        width: 2.5rem;
+        height: 0.28rem;
+        border-radius: 999px;
+        background: rgba(255, 255, 255, 0.28);
+        margin-right: auto;
+    }
+
+    .rv-work-sheet-close {
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        background: rgba(255, 255, 255, 0.06);
+        color: #fafafa;
+        border-radius: 999px;
+        padding: 0.4rem 0.85rem;
+        font-size: 0.72rem;
+        font-weight: 700;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        cursor: pointer;
     }
 
     .rv-work-detail-card {
+        position: relative;
+        z-index: 1;
+        width: 100%;
+        max-height: min(92dvh, 820px);
         min-height: 0;
+        overflow-x: hidden;
+        overflow-y: auto;
+        overscroll-behavior: contain;
+        -webkit-overflow-scrolling: touch;
+        touch-action: pan-y;
+        border-radius: 22px 22px 0 0;
+        transform: translate3d(0, 110%, 0);
+        transition: transform 0.34s cubic-bezier(0.32, 0.72, 0, 1);
+        box-shadow: 0 -18px 60px rgba(0, 0, 0, 0.35);
+        padding-bottom: max(0.75rem, env(safe-area-inset-bottom));
     }
+
+    .rv-work-col-detail--sheet-open .rv-work-detail-card {
+        transform: translate3d(0, 0, 0);
+    }
+
+    .rv-work-stage {
+        aspect-ratio: 16 / 9;
+        min-height: 42vw;
+        max-height: 38dvh;
+    }
+
+    .rv-work-detail-copy {
+        padding-bottom: max(1.5rem, env(safe-area-inset-bottom));
+    }
+
+    .rv-work-detail-cta {
+        margin-bottom: 0.35rem;
+        position: relative;
+        z-index: 2;
+    }
+}
+
+html.rv-work-sheet-lock,
+html.rv-work-sheet-lock body {
+    overflow: hidden !important;
+    overscroll-behavior: none;
 }
 
 @media (max-width: 900px) {
@@ -2599,7 +2906,7 @@
   font-family: var(--font-sans), "Poppins", ui-sans-serif, system-ui, sans-serif;
 }
 
-.rv-work-lede,
+.rv-work-heading,
 .rv-work-practice-title,
 .rv-work-row-title,
 .rv-work-detail-title,

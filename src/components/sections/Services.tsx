@@ -115,28 +115,30 @@ export function Services() {
                 </ul>
               </div>
 
-              <div className="flex h-full flex-col border-t border-fg-inverse/15 pt-6 lg:border-t-0 lg:border-l lg:pl-10 lg:pt-1">
-                <p className="type-mono text-[0.65rem] uppercase tracking-[0.14em] text-fg-inverse/40">
-                  What you get
-                </p>
-                <ul className="mt-5 space-y-4">
-                  {active.deliverables.map((item, i) => (
-                    <li key={item} className="flex gap-4">
-                      <span className="type-mono shrink-0 text-[0.65rem] text-accent">
-                        {String(i + 1).padStart(2, '0')}
-                      </span>
-                      <span className="text-sm leading-relaxed text-fg-inverse/80 sm:text-[0.95rem]">
-                        {item}
-                      </span>
-                    </li>
-                  ))}
-                </ul>
+              <div className="flex h-full flex-col gap-8 border-t border-fg-inverse/15 pt-6 sm:gap-10 lg:gap-0 lg:border-t-0 lg:border-l lg:pl-10 lg:pt-1">
+                <div>
+                  <p className="type-mono text-[0.65rem] uppercase tracking-[0.14em] text-fg-inverse/40">
+                    What you get
+                  </p>
+                  <ul className="mt-5 space-y-4">
+                    {active.deliverables.map((item, i) => (
+                      <li key={item} className="flex gap-4">
+                        <span className="type-mono shrink-0 text-[0.65rem] text-accent">
+                          {String(i + 1).padStart(2, '0')}
+                        </span>
+                        <span className="text-sm leading-relaxed text-fg-inverse/80 sm:text-[0.95rem]">
+                          {item}
+                        </span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
 
                 <a
                   href={profile.links.upwork}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="mt-auto inline-flex min-h-[3.75rem] w-full items-center justify-center gap-2 rounded-[var(--radius-shell)] bg-accent px-5 py-4 text-base font-bold tracking-tight text-accent-fg transition-opacity hover:opacity-90 sm:mt-10 sm:min-h-[5rem] sm:gap-3 sm:px-6 sm:py-5 sm:text-2xl md:text-3xl"
+                  className="inline-flex min-h-[3.75rem] w-full shrink-0 items-center justify-center gap-2 rounded-[var(--radius-shell)] bg-accent px-5 py-4 text-base font-bold tracking-tight text-accent-fg transition-opacity hover:opacity-90 sm:min-h-[5rem] sm:gap-3 sm:px-6 sm:py-5 sm:text-2xl md:text-3xl lg:mt-auto lg:pt-8"
                 >
                   Hire on Upwork
                   <span aria-hidden className="text-[1.1em]">

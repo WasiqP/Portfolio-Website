@@ -5,6 +5,7 @@ import { themeInitScript } from '@/lib/theme'
 import { Navbar } from '@/components/layout/Navbar'
 import { Footer } from '@/components/layout/Footer'
 import { SmoothScroll } from '@/components/layout/SmoothScroll'
+import { NavigationProgress } from '@/components/layout/NavigationProgress'
 import { InteractiveLayer } from '@/components/interactive/InteractiveLayer'
 import { profile } from '@/data/profile'
 import './globals.css'
@@ -50,6 +51,7 @@ export default function RootLayout({
       <body className="bg-bg text-fg antialiased">
         <ThemeProvider>
           <SmoothScroll>
+            <NavigationProgress />
             <div className="flex min-h-dvh flex-col">
               <Navbar />
               <main className="flex-1">{children}</main>

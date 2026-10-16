@@ -6,10 +6,21 @@
 
 export type ServicePillarIcon = "zap" | "server" | "pen";
 
-/** How long each lane auto-rotates in the Selected Work section. */
-export const WORK_LANE_ROTATE_MS = 10_000;
-
 export type ProjectMetric = { value: string; label: string; hint: string };
+
+/** Lighter Cloudinary delivery for portfolio previews (once per mount). */
+export function cloudinaryVideoLite(src: string): string {
+  if (!src.includes("res.cloudinary.com") || !src.includes("/upload/")) return src;
+  return src.replace("/upload/", "/upload/f_auto,q_auto:eco,c_limit,w_1280/");
+}
+
+/** Still frame poster — cheap until the video is armed. */
+export function cloudinaryVideoPoster(src: string): string {
+  if (!src.includes("res.cloudinary.com") || !src.includes("/upload/")) return src;
+  return src
+    .replace("/upload/", "/upload/so_0,w_960,h_540,c_fill,q_auto,f_jpg/")
+    .replace(/\.mp4(\?.*)?$/i, ".jpg$1");
+}
 
 export type FeaturedProject = {
   id: string;

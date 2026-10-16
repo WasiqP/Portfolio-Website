@@ -8,12 +8,12 @@ import { Contact } from '@/components/sections/Contact'
 export default function HomePage() {
   return (
     <div className="relative">
-      {/* Sticky cover only on large screens — mobile/tablet scroll normally */}
-      <div className="relative z-0 lg:sticky lg:top-[var(--nav-h)]">
+      {/* Sticky hero — mobile peeks About/video below; sheet rises on scroll */}
+      <div className="relative z-0 sticky top-[var(--nav-h)]">
         <Hero />
       </div>
 
-      <div className="relative z-10 rounded-t-[var(--radius-shell)] border-t border-accent/35 bg-bg shadow-[var(--overlay-shadow)]">
+      <div className="hero-rise relative z-10 rounded-t-[var(--radius-shell)] border-t border-accent/35 bg-bg shadow-[var(--overlay-shadow)]">
         <div aria-hidden className="flex w-full justify-center pt-3 sm:pt-5">
           <span className="h-1.5 w-12 rounded-full bg-accent" />
         </div>
