@@ -246,7 +246,7 @@
 /* ── Hero cover: sticky stage + rising CTA sheet ─────────── */
 :root {
   /* Knob + white top lip only — no section body */
-  --hero-peek: 1.85rem;
+  --hero-peek: 2rem;
 }
 
 .hero-cover {
@@ -265,8 +265,12 @@
 }
 
 .hero-stage {
-  /* lvh = stable layout viewport — svh/dvh flicker mid-scroll shakes sticky */
-  height: calc(100lvh - var(--nav-h));
+  /*
+    svh = smallest visible viewport (URL bar showing).
+    lvh was taller than some phones' visible area, so the CTA lip
+    sat below the fold.
+  */
+  height: calc(100svh - var(--nav-h));
 }
 
 .hero-rise {
@@ -294,20 +298,27 @@
 }
 
 @media (max-width: 1023px) {
+  .hero-stage {
+    /* Keep lip above iOS home indicator / gesture bar */
+    height: calc(
+      100svh - var(--nav-h) - env(safe-area-inset-bottom, 0px)
+    );
+  }
+
   .hero-rise {
     margin-top: calc(var(--hero-peek) * -1);
   }
 
-  /*
-    Push About content below the peek so the first viewport
-    only shows knob + white lip, never the video/body.
-  */
   .hero-rise > #about {
     margin-top: 0;
   }
 }
 
 @media (min-width: 1024px) {
+  .hero-stage {
+    height: calc(100lvh - var(--nav-h));
+  }
+
   .hero-rise-lip {
     height: auto;
     padding-top: 0.85rem;
