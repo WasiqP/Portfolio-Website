@@ -2042,8 +2042,6 @@
         opacity: 0;
         visibility: hidden;
         pointer-events: none;
-        overscroll-behavior: none;
-        touch-action: none;
         transition: opacity 0.28s ease, visibility 0.28s ease;
     }
 
@@ -2051,6 +2049,8 @@
         opacity: 1;
         visibility: visible;
         pointer-events: auto;
+        overscroll-behavior: none;
+        touch-action: none;
     }
 
     .rv-work-sheet-backdrop {

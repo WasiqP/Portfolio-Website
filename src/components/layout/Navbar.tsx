@@ -27,11 +27,18 @@ export function Navbar() {
   }, [pathname])
 
   useEffect(() => {
-    document.body.style.overflow = open ? 'hidden' : ''
+    if (open) {
+      lenis?.stop()
+      document.body.style.overflow = 'hidden'
+    } else {
+      document.body.style.overflow = ''
+      lenis?.start()
+    }
     return () => {
       document.body.style.overflow = ''
+      lenis?.start()
     }
-  }, [open])
+  }, [open, lenis])
 
   function goToSection(e: MouseEvent<HTMLAnchorElement>, id: string) {
     if (!onHome) {

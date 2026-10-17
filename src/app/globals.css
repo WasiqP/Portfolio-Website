@@ -243,19 +243,75 @@
   }
 }
 
-/* ── Mobile hero: centered stage + knob-only peek at bottom ─ */
+/* ── Hero cover: sticky stage + rising CTA sheet ─────────── */
 :root {
-  /* Only the lime drag pill — no video above the fold */
-  --hero-peek: 2.75rem;
+  /* Knob + white top lip only — no section body */
+  --hero-peek: 1.85rem;
+}
+
+.hero-cover {
+  position: relative;
+  overflow: visible;
+}
+
+.hero-cover-sticky {
+  position: sticky;
+  top: var(--nav-h);
+  z-index: 0;
+  /* Own compositor layer — stops sticky + smooth-scroll subpixel shake */
+  transform: translate3d(0, 0, 0);
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
 }
 
 .hero-stage {
-  height: calc(100dvh - var(--nav-h));
+  /* lvh = stable layout viewport — svh/dvh flicker mid-scroll shakes sticky */
+  height: calc(100lvh - var(--nav-h));
+}
+
+.hero-rise {
+  isolation: isolate;
+  overflow: visible;
+}
+
+/* Slim top chrome: knob sitting on the white rounded border */
+.hero-rise-lip {
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  height: var(--hero-peek);
+  padding-top: 0.55rem;
+  pointer-events: none;
+}
+
+.hero-rise-knob {
+  display: block;
+  width: 3rem;
+  height: 0.35rem;
+  border-radius: 999px;
+  background: var(--accent);
+  flex-shrink: 0;
 }
 
 @media (max-width: 1023px) {
-  .hero-stage {
-    height: calc(100dvh - var(--nav-h) - var(--hero-peek));
+  .hero-rise {
+    margin-top: calc(var(--hero-peek) * -1);
+  }
+
+  /*
+    Push About content below the peek so the first viewport
+    only shows knob + white lip, never the video/body.
+  */
+  .hero-rise > #about {
+    margin-top: 0;
+  }
+}
+
+@media (min-width: 1024px) {
+  .hero-rise-lip {
+    height: auto;
+    padding-top: 0.85rem;
+    padding-bottom: 0.15rem;
   }
 }
 

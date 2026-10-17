@@ -48,6 +48,8 @@ function navOffset() {
   return Number.isFinite(px) ? -px - 8 : -80
 }
 
+const TOUCH_SCROLL_MQ = '(max-width: 1023px), (pointer: coarse)'
+
 export function SmoothScroll({ children }: { children: ReactNode }) {
   const reduced = usePrefersReducedMotion()
   const pathname = usePathname()
@@ -57,36 +59,61 @@ export function SmoothScroll({ children }: { children: ReactNode }) {
   useEffect(() => {
     if (reduced) {
       lenisRef.current = null
-      setReady(false)
+      setReady(true)
       return
     }
 
-    const lenis = new Lenis({
-      // Smooth but responsive — not floaty
-      duration: 0.9,
-      easing: easeOutQuart,
-      smoothWheel: true,
-      wheelMultiplier: 1.15,
-      touchMultiplier: 1.2,
-      autoRaf: true,
-    })
+    const touchMq = window.matchMedia(TOUCH_SCROLL_MQ)
 
-    lenis.on('scroll', ScrollTrigger.update)
+    const teardown = () => {
+      document.documentElement.classList.remove('lenis', 'lenis-smooth')
+      lenisRef.current?.destroy()
+      lenisRef.current = null
+      setReady(false)
+    }
+
+    const setup = () => {
+      teardown()
+
+      const isTouch = touchMq.matches
+
+      /*
+        Touch / compact: native scroll only.
+        Lenis + position:sticky subpixel-fights every frame → hero shake.
+        Desktop keeps Lenis; nav scrollTo still smooth via native fallback.
+      */
+      if (isTouch) {
+        setReady(true)
+        window.setTimeout(() => ScrollTrigger.refresh(), 200)
+        return
+      }
+
+      const lenis = new Lenis({
+        duration: 0.9,
+        easing: easeOutQuart,
+        smoothWheel: true,
+        wheelMultiplier: 1.15,
+        syncTouch: false,
+        allowNestedScroll: true,
+        autoRaf: true,
+      })
+
+      lenis.on('scroll', ScrollTrigger.update)
+      lenisRef.current = lenis
+      setReady(true)
+      document.documentElement.classList.add('lenis', 'lenis-smooth')
+      window.setTimeout(() => ScrollTrigger.refresh(), 200)
+    }
+
+    setup()
     const onSettle = () => ScrollTrigger.refresh()
     window.addEventListener('load', onSettle)
-    const refreshTimer = window.setTimeout(onSettle, 400)
-
-    lenisRef.current = lenis
-    setReady(true)
-    document.documentElement.classList.add('lenis', 'lenis-smooth')
+    touchMq.addEventListener('change', setup)
 
     return () => {
       window.removeEventListener('load', onSettle)
-      window.clearTimeout(refreshTimer)
-      document.documentElement.classList.remove('lenis', 'lenis-smooth')
-      lenis.destroy()
-      lenisRef.current = null
-      setReady(false)
+      touchMq.removeEventListener('change', setup)
+      teardown()
     }
   }, [reduced])
 
@@ -108,13 +135,26 @@ export function SmoothScroll({ children }: { children: ReactNode }) {
 
       if (typeof target === 'string') {
         const el = document.querySelector(target)
-        el?.scrollIntoView({ behavior: reduced ? 'auto' : 'smooth', block: 'start' })
+        if (!el) return
+        const top =
+          el.getBoundingClientRect().top + window.scrollY + offset
+        window.scrollTo({
+          top,
+          behavior: reduced || options?.immediate ? 'auto' : 'smooth',
+        })
         return
       }
       if (typeof target === 'number') {
         window.scrollTo({
           top: target,
-          behavior: reduced ? 'auto' : 'smooth',
+          behavior: reduced || options?.immediate ? 'auto' : 'smooth',
+        })
+      } else {
+        const top =
+          target.getBoundingClientRect().top + window.scrollY + offset
+        window.scrollTo({
+          top,
+          behavior: reduced || options?.immediate ? 'auto' : 'smooth',
         })
       }
     },
@@ -124,10 +164,14 @@ export function SmoothScroll({ children }: { children: ReactNode }) {
   const stop = useCallback(() => {
     lenisRef.current?.stop()
     document.documentElement.classList.add('lenis-stopped')
+    document.documentElement.style.overflow = 'hidden'
+    document.body.style.overflow = 'hidden'
   }, [])
 
   const start = useCallback(() => {
     document.documentElement.classList.remove('lenis-stopped')
+    document.documentElement.style.overflow = ''
+    document.body.style.overflow = ''
     lenisRef.current?.start()
   }, [])
 

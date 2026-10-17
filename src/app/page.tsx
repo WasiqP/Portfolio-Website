@@ -8,23 +8,28 @@ import { Contact } from '@/components/sections/Contact'
 export default function HomePage() {
   return (
     <div className="relative">
-      {/* Sticky hero — mobile peeks About/video below; sheet rises on scroll */}
-      <div className="relative z-0 sticky top-[var(--nav-h)]">
-        <Hero />
+      {/*
+        Sticky hero + rising sheet share a parent so the white panel
+        slides over the hero. Knob floats above the sheet edge so only
+        it peeks into the first viewport — no white chrome.
+      */}
+      <div className="hero-cover">
+        <div className="hero-cover-sticky">
+          <Hero />
+        </div>
+
+        <div className="hero-rise relative z-10 rounded-t-[var(--radius-shell)] border-t border-accent/35 bg-bg shadow-[var(--overlay-shadow)]">
+          <div className="hero-rise-lip" aria-hidden>
+            <span className="hero-rise-knob" />
+          </div>
+          <About />
+          <div className="bg-bg">
+            <Stack />
+            <Services />
+          </div>
+        </div>
       </div>
 
-      <div className="hero-rise relative z-10 rounded-t-[var(--radius-shell)] border-t border-accent/35 bg-bg shadow-[var(--overlay-shadow)]">
-        <div aria-hidden className="flex w-full justify-center pt-3 sm:pt-5">
-          <span className="h-1.5 w-12 rounded-full bg-accent" />
-        </div>
-        <About />
-        <div className="bg-bg">
-          <Stack />
-          <Services />
-        </div>
-      </div>
-
-      {/* Company-style cinematic chain (Domain → Work → Full Services → Process → FAQ) */}
       <CinematicChain />
 
       <div className="relative z-20 bg-bg">

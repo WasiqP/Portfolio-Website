@@ -434,26 +434,15 @@ export default function CinematicChain() {
 
   const closeMobileSheet = () => setMobileSheetOpen(false);
 
-  // Freeze Lenis + native scroll while the mobile preview sheet is open
+  // Freeze page scroll while the mobile preview sheet is open
   useEffect(() => {
     if (!mobileSheetOpen || !isCompactWork) return;
 
     const html = document.documentElement;
-    const body = document.body;
-    const prevHtmlOverflow = html.style.overflow;
-    const prevBodyOverflow = body.style.overflow;
-    const prevTouchAction = body.style.touchAction;
-
     lenis?.stop();
-    html.style.overflow = "hidden";
-    body.style.overflow = "hidden";
-    body.style.touchAction = "none";
     html.classList.add("rv-work-sheet-lock");
 
     return () => {
-      html.style.overflow = prevHtmlOverflow;
-      body.style.overflow = prevBodyOverflow;
-      body.style.touchAction = prevTouchAction;
       html.classList.remove("rv-work-sheet-lock");
       lenis?.start();
     };
@@ -663,7 +652,7 @@ export default function CinematicChain() {
                     onClick={closeMobileSheet}
                   />
                 ) : null}
-                <div className="rv-work-detail-card">
+                <div className="rv-work-detail-card" data-lenis-prevent>
                   {isCompactWork ? (
                     <div className="rv-work-sheet-chrome">
                       <span className="rv-work-sheet-handle" aria-hidden="true" />
